@@ -1,0 +1,367 @@
+/**
+ * WeeWoo Auth Pro - Admin Styles
+ */
+
+/* Admin Wrapper */
+.ww-auth-admin-wrap {
+    max-width: 900px;
+    margin: 20px 20px 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Header */
+.ww-auth-admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.ww-auth-admin-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.ww-auth-logo {
+    font-size: 28px;
+}
+
+.ww-auth-version {
+    font-size: 13px;
+    color: #6B7280;
+    background: #F3F4F6;
+    padding: 4px 12px;
+    border-radius: 100px;
+}
+
+/* Tabs */
+.ww-auth-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    background: #F9FAFB;
+    padding: 6px;
+    border-radius: 12px;
+}
+
+.ww-auth-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: #6B7280;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.ww-auth-tab:hover {
+    color: #111827;
+    background: white;
+}
+
+.ww-auth-tab.active {
+    color: #111827;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ww-auth-tab .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Cards */
+.ww-auth-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #E5E7EB;
+}
+
+.ww-auth-card h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px 0;
+    padding: 0;
+}
+
+.ww-auth-card-desc {
+    color: #6B7280;
+    font-size: 14px;
+    margin: 0 0 20px 0;
+}
+
+.ww-auth-card-desc a {
+    color: #10B981;
+    text-decoration: none;
+}
+
+.ww-auth-card-desc a:hover {
+    text-decoration: underline;
+}
+
+/* Toggle Switches - Pure CSS, no JS dependency */
+.ww-auth-toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.ww-auth-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    background: #F9FAFB;
+    border-radius: 12px;
+}
+
+.ww-auth-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ww-auth-toggle-info strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.ww-auth-toggle-info span {
+    font-size: 13px;
+    color: #6B7280;
+}
+
+/* CSS-Only Toggle Switch */
+.ww-auth-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.ww-auth-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ww-auth-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #D1D5DB;
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.ww-auth-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.ww-auth-switch input:checked + .ww-auth-slider {
+    background-color: #10B981;
+}
+
+.ww-auth-switch input:checked + .ww-auth-slider:before {
+    transform: translateX(22px);
+}
+
+.ww-auth-switch input:focus + .ww-auth-slider {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Form Table */
+.ww-auth-form-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ww-auth-form-table th {
+    text-align: left;
+    padding: 16px 16px 16px 0;
+    font-weight: 500;
+    color: #374151;
+    vertical-align: top;
+    width: 200px;
+}
+
+.ww-auth-form-table td {
+    padding: 16px 0;
+}
+
+.ww-auth-form-table .regular-text {
+    width: 100%;
+    max-width: 400px;
+    padding: 10px 14px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ww-auth-form-table .regular-text:focus {
+    border-color: #10B981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    outline: none;
+}
+
+.ww-auth-form-table .large-text {
+    width: 100%;
+    max-width: 100%;
+}
+
+.ww-auth-form-table .small-text {
+    width: 80px;
+}
+
+.ww-auth-form-table .description {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.ww-auth-form-table select {
+    padding: 10px 14px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.ww-auth-form-table input[type="color"] {
+    width: 48px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.ww-auth-form-table input[type="color"] + code {
+    margin-left: 12px;
+    padding: 4px 8px;
+    background: #F3F4F6;
+    border-radius: 4px;
+    font-size: 13px;
+    vertical-align: middle;
+}
+
+/* Info Box */
+.ww-auth-info-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #F0FDF4;
+    border-radius: 12px;
+    border: 1px solid #BBF7D0;
+}
+
+.ww-auth-info-box strong {
+    color: #166534;
+    font-size: 14px;
+}
+
+.ww-auth-info-box code {
+    padding: 6px 12px;
+    background: white;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #111827;
+    border: 1px solid #D1FAE5;
+}
+
+/* Buttons */
+.ww-auth-btn-primary {
+    background: #10B981 !important;
+    border: none !important;
+    color: white !important;
+    padding: 10px 24px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background 0.2s !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+.ww-auth-btn-primary:hover {
+    background: #059669 !important;
+}
+
+.ww-auth-btn-primary:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3) !important;
+    outline: none !important;
+}
+
+/* Preview Box */
+.ww-auth-preview-box {
+    background: #F4F9F5;
+    padding: 40px;
+    border-radius: 16px;
+    margin-top: 16px;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .ww-auth-admin-wrap {
+        margin: 10px;
+    }
+    
+    .ww-auth-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .ww-auth-tab {
+        flex: 1;
+        justify-content: center;
+        min-width: calc(50% - 4px);
+    }
+    
+    .ww-auth-form-table th {
+        display: block;
+        width: 100%;
+        padding-bottom: 8px;
+    }
+    
+    .ww-auth-form-table td {
+        display: block;
+        padding-top: 0;
+    }
+    
+    .ww-auth-form-table .regular-text {
+        max-width: 100%;
+    }
+}

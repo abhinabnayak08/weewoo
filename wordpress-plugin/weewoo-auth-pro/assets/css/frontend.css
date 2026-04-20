@@ -1,0 +1,266 @@
+/**
+ * WeeWoo Auth Pro - Frontend Styles
+ * Studio White UI - Fintech Design
+ */
+
+/* Base Variables - Can be overridden by PHP inline styles */
+:root {
+    --ww-primary: #10B981;
+    --ww-secondary: #111827;
+    --ww-primary-hover: #059669;
+    --ww-secondary-hover: #1F2937;
+    --ww-bg: #F4F9F5;
+    --ww-card: #FFFFFF;
+    --ww-text: #111827;
+    --ww-text-muted: #6B7280;
+    --ww-border: #E5E7EB;
+    --ww-success: #059669;
+    --ww-error: #DC2626;
+    --ww-radius-sm: 8px;
+    --ww-radius-md: 12px;
+    --ww-radius-lg: 16px;
+    --ww-radius-xl: 24px;
+    --ww-radius-full: 100px;
+    --ww-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    --ww-transition: 0.2s ease;
+}
+
+/* Additional utility classes for external use */
+.ww-text-primary { color: var(--ww-primary); }
+.ww-text-secondary { color: var(--ww-secondary); }
+.ww-text-muted { color: var(--ww-text-muted); }
+.ww-bg-primary { background-color: var(--ww-primary); }
+.ww-bg-secondary { background-color: var(--ww-secondary); }
+
+/* Animations */
+@keyframes ww-fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes ww-slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ww-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes ww-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes ww-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Utility Animations */
+.ww-animate-fade { animation: ww-fadeIn 0.3s ease-out; }
+.ww-animate-slide { animation: ww-slideUp 0.4s ease-out; }
+.ww-animate-pulse { animation: ww-pulse 2s infinite; }
+.ww-animate-shake { animation: ww-shake 0.3s ease-out; }
+
+/* Focus Styles */
+.ww-focus-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+}
+
+/* Loading States */
+.ww-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.ww-loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Phone Input with Country Code */
+.ww-phone-input-group {
+    display: flex;
+    gap: 8px;
+}
+
+.ww-country-select {
+    width: 100px;
+    padding: 14px 12px;
+    border: 2px solid var(--ww-border);
+    border-radius: var(--ww-radius-md);
+    background: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.ww-country-select:focus {
+    border-color: var(--ww-primary);
+    outline: none;
+}
+
+/* Divider */
+.ww-divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 24px 0;
+    color: var(--ww-text-muted);
+    font-size: 13px;
+}
+
+.ww-divider::before,
+.ww-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--ww-border);
+}
+
+/* Checkbox/Toggle */
+.ww-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.ww-checkbox input {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--ww-border);
+    border-radius: 4px;
+    cursor: pointer;
+    accent-color: var(--ww-primary);
+}
+
+.ww-checkbox label {
+    font-size: 14px;
+    color: var(--ww-text-muted);
+    cursor: pointer;
+}
+
+/* Tooltip */
+.ww-tooltip {
+    position: relative;
+}
+
+.ww-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background: var(--ww-secondary);
+    color: white;
+    font-size: 12px;
+    border-radius: var(--ww-radius-sm);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--ww-transition);
+    margin-bottom: 8px;
+}
+
+.ww-tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Badge */
+.ww-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--ww-radius-full);
+}
+
+.ww-badge-success {
+    background: #ECFDF5;
+    color: var(--ww-success);
+}
+
+.ww-badge-error {
+    background: #FEF2F2;
+    color: var(--ww-error);
+}
+
+.ww-badge-info {
+    background: #EFF6FF;
+    color: #3B82F6;
+}
+
+/* Progress */
+.ww-progress {
+    height: 4px;
+    background: var(--ww-border);
+    border-radius: var(--ww-radius-full);
+    overflow: hidden;
+}
+
+.ww-progress-bar {
+    height: 100%;
+    background: var(--ww-primary);
+    transition: width 0.3s ease;
+}
+
+/* Screen reader only */
+.ww-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Print styles */
+@media print {
+    .ww-login-wrapper {
+        display: none;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    :root {
+        --ww-border: #000000;
+    }
+    
+    .ww-input,
+    .ww-otp-input,
+    .ww-method-btn {
+        border-width: 3px;
+    }
+}
