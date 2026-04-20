@@ -2,7 +2,7 @@
 /**
  * Secure Login Page Template
  * 
- * Premium Fintech UI Design
+ * Premium Fintech UI Design - Fixed Version
  *
  * @package WeeWoo_Auth_Pro
  */
@@ -17,7 +17,6 @@ $branding = WW_Frontend::get_branding();
 $methods = WW_Frontend::get_auth_methods();
 $turnstile = WW_Turnstile::instance();
 $qr_session = isset($_GET['qr_session']) ? sanitize_text_field($_GET['qr_session']) : '';
-$is_qr_auth = isset($_GET['action']) && $_GET['action'] === 'ww_qr_auth' && is_user_logged_in();
 $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) : '';
 ?>
 <!DOCTYPE html>
@@ -32,238 +31,244 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <?php wp_head(); ?>
-    
     <style>
-        :root {
-            --ww-primary: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
-            --ww-secondary: <?php echo esc_attr($branding['secondary_color'] ?: '#111827'); ?>;
-            --ww-bg: #0a0a0a;
-            --ww-card: #1a1a1a;
-            --ww-card-hover: #222222;
-            --ww-border: #2a2a2a;
-            --ww-text: #ffffff;
-            --ww-text-muted: #9ca3af;
-            --ww-input-bg: #0f0f0f;
-            --ww-success: #10B981;
-            --ww-error: #ef4444;
-        }
-        
-        * {
+        /* Reset & Base */
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--ww-bg);
+        html, body {
+            height: 100%;
+            width: 100%;
+        }
+        
+        body.ww-auth-page {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            color: var(--ww-text);
+            color: #ffffff;
             line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
         
-        /* Main Container */
-        .ww-container {
+        /* Container */
+        .ww-auth-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
         
         /* Card */
-        .ww-card {
-            background: var(--ww-card);
+        .ww-auth-card {
+            background: #1a1a1a;
             border-radius: 24px;
-            padding: 32px;
-            border: 1px solid var(--ww-border);
-            animation: slideUp 0.4s ease-out;
+            padding: 36px 32px;
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
         
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
-        }
-        
-        /* Header */
-        .ww-header {
+        /* Logo */
+        .ww-auth-logo {
             text-align: center;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
         
-        .ww-logo {
-            margin-bottom: 20px;
-        }
-        
-        .ww-logo img {
-            max-height: 40px;
+        .ww-auth-logo img {
+            max-height: 44px;
             width: auto;
         }
         
-        .ww-logo-icon {
-            width: 48px;
-            height: 48px;
-            background: var(--ww-primary);
-            border-radius: 14px;
+        .ww-auth-logo-icon {
+            width: 56px;
+            height: 56px;
+            background: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
+            border-radius: 16px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
         }
         
-        .ww-logo-icon svg {
-            width: 24px;
-            height: 24px;
-            color: white;
+        .ww-auth-logo-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
         }
         
-        .ww-title {
-            font-size: 22px;
+        /* Header */
+        .ww-auth-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        
+        .ww-auth-title {
+            font-size: 24px;
             font-weight: 600;
-            color: var(--ww-text);
-            margin-bottom: 6px;
+            color: #ffffff;
+            margin-bottom: 8px;
         }
         
-        .ww-subtitle {
+        .ww-auth-subtitle {
             font-size: 14px;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
         }
         
         /* Tabs */
-        .ww-tabs {
+        .ww-auth-tabs {
             display: flex;
-            background: var(--ww-input-bg);
+            background: #0f0f0f;
             border-radius: 12px;
             padding: 4px;
             margin-bottom: 24px;
         }
         
-        .ww-tab {
+        .ww-auth-tab {
             flex: 1;
             padding: 12px 16px;
             font-size: 14px;
             font-weight: 500;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
             background: transparent;
             border: none;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
+            font-family: inherit;
         }
         
-        .ww-tab:hover {
-            color: var(--ww-text);
+        .ww-auth-tab:hover {
+            color: #ffffff;
         }
         
-        .ww-tab.active {
-            background: var(--ww-card-hover);
-            color: var(--ww-text);
+        .ww-auth-tab.active {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        
+        /* Tab Panels - CRITICAL: Hide inactive */
+        .ww-auth-panel {
+            display: none;
+        }
+        
+        .ww-auth-panel.active {
+            display: block;
         }
         
         /* Views */
-        .ww-view {
+        .ww-auth-view {
             display: none;
-            animation: fadeIn 0.3s ease-out;
         }
         
-        .ww-view.active {
+        .ww-auth-view.active {
             display: block;
         }
         
         /* Form Groups */
-        .ww-form-group {
-            margin-bottom: 16px;
+        .ww-auth-field {
+            margin-bottom: 18px;
         }
         
-        .ww-label {
+        .ww-auth-label {
             display: block;
             font-size: 13px;
             font-weight: 500;
-            color: var(--ww-text);
+            color: #e5e5e5;
             margin-bottom: 8px;
         }
         
-        .ww-input-wrapper {
+        .ww-auth-input-wrap {
             position: relative;
+            display: flex;
+            align-items: center;
         }
         
-        .ww-input-icon {
+        .ww-auth-input-icon {
             position: absolute;
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--ww-text-muted);
+            color: #6b7280;
             pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
         }
         
-        .ww-input-icon svg {
+        .ww-auth-input-icon svg {
             width: 18px;
             height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
         
-        .ww-input {
+        .ww-auth-input {
             width: 100%;
-            padding: 14px 14px 14px 44px;
+            padding: 14px 14px 14px 46px;
             font-size: 15px;
             font-family: inherit;
-            color: var(--ww-text);
-            background: var(--ww-input-bg);
-            border: 1px solid var(--ww-border);
+            color: #ffffff;
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             outline: none;
             transition: all 0.2s ease;
         }
         
-        .ww-input::placeholder {
-            color: var(--ww-text-muted);
+        .ww-auth-input::placeholder {
+            color: #6b7280;
         }
         
-        .ww-input:focus {
-            border-color: var(--ww-primary);
+        .ww-auth-input:focus {
+            border-color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
         
-        .ww-input.error {
-            border-color: var(--ww-error);
-            animation: shake 0.3s ease;
+        .ww-auth-input.has-toggle {
+            padding-right: 46px;
         }
         
         /* Password Toggle */
-        .ww-password-toggle {
+        .ww-auth-toggle-pwd {
             position: absolute;
             right: 14px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: var(--ww-text-muted);
+            color: #6b7280;
             cursor: pointer;
             padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .ww-password-toggle:hover {
-            color: var(--ww-text);
+        .ww-auth-toggle-pwd:hover {
+            color: #9ca3af;
         }
         
-        .ww-password-toggle svg {
+        .ww-auth-toggle-pwd svg {
             width: 18px;
             height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
         }
         
-        /* Checkbox & Remember */
-        .ww-options-row {
+        /* Options Row */
+        .ww-auth-options {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -271,33 +276,33 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
             font-size: 13px;
         }
         
-        .ww-checkbox {
+        .ww-auth-checkbox {
             display: flex;
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
         }
         
-        .ww-checkbox input {
+        .ww-auth-checkbox input {
             width: 16px;
             height: 16px;
-            accent-color: var(--ww-primary);
+            accent-color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             cursor: pointer;
         }
         
-        .ww-link {
-            color: var(--ww-primary);
+        .ww-auth-link {
+            color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             text-decoration: none;
             font-weight: 500;
         }
         
-        .ww-link:hover {
+        .ww-auth-link:hover {
             text-decoration: underline;
         }
         
         /* Buttons */
-        .ww-btn {
+        .ww-auth-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -313,102 +318,95 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
             transition: all 0.2s ease;
         }
         
-        .ww-btn:disabled {
+        .ww-auth-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
         
-        .ww-btn-primary {
-            background: var(--ww-primary);
+        .ww-auth-btn-primary {
+            background: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             color: white;
         }
         
-        .ww-btn-primary:hover:not(:disabled) {
+        .ww-auth-btn-primary:hover:not(:disabled) {
             filter: brightness(1.1);
             transform: translateY(-1px);
         }
         
-        .ww-btn-primary:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        
-        .ww-btn-outline {
+        .ww-auth-btn-outline {
             background: transparent;
-            color: var(--ww-text);
-            border: 1px solid var(--ww-border);
+            color: #ffffff;
+            border: 1px solid #2a2a2a;
         }
         
-        .ww-btn-outline:hover:not(:disabled) {
-            background: var(--ww-card-hover);
-            border-color: var(--ww-text-muted);
-        }
-        
-        .ww-btn-icon {
-            width: 20px;
-            height: 20px;
+        .ww-auth-btn-outline:hover:not(:disabled) {
+            background: #222222;
+            border-color: #3a3a3a;
         }
         
         /* Spinner */
-        .ww-spinner {
+        .ww-auth-spinner {
             width: 18px;
             height: 18px;
             border: 2px solid transparent;
             border-top-color: currentColor;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: ww-spin 0.8s linear infinite;
         }
         
-        @keyframes spin {
+        @keyframes ww-spin {
             to { transform: rotate(360deg); }
         }
         
         /* Divider */
-        .ww-divider {
+        .ww-auth-divider {
             display: flex;
             align-items: center;
             gap: 16px;
             margin: 24px 0;
-            color: var(--ww-text-muted);
+            color: #6b7280;
             font-size: 13px;
         }
         
-        .ww-divider::before,
-        .ww-divider::after {
+        .ww-auth-divider::before,
+        .ww-auth-divider::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: var(--ww-border);
+            background: #2a2a2a;
         }
         
-        /* Auth Methods */
-        .ww-methods {
+        /* Method Buttons */
+        .ww-auth-methods {
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
         
-        .ww-method-btn {
+        .ww-auth-method {
             display: flex;
             align-items: center;
             gap: 14px;
             width: 100%;
             padding: 14px 16px;
-            background: var(--ww-input-bg);
-            border: 1px solid var(--ww-border);
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: left;
+            font-family: inherit;
+            color: inherit;
         }
         
-        .ww-method-btn:hover {
-            background: var(--ww-card-hover);
-            border-color: var(--ww-text-muted);
+        .ww-auth-method:hover {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
         }
         
-        .ww-method-icon {
-            width: 40px;
-            height: 40px;
+        .ww-auth-method-icon {
+            width: 42px;
+            height: 42px;
             border-radius: 10px;
             display: flex;
             align-items: center;
@@ -416,109 +414,144 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
             flex-shrink: 0;
         }
         
-        .ww-method-icon.whatsapp { background: #25D366; }
-        .ww-method-icon.email { background: #6366F1; }
-        .ww-method-icon.passkey { background: #3B82F6; }
-        .ww-method-icon.qr { background: var(--ww-primary); }
+        .ww-auth-method-icon.whatsapp { background: #25D366; }
+        .ww-auth-method-icon.email { background: #6366F1; }
+        .ww-auth-method-icon.passkey { background: #3B82F6; }
+        .ww-auth-method-icon.qr { background: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>; }
         
-        .ww-method-icon svg {
+        .ww-auth-method-icon svg {
             width: 20px;
             height: 20px;
-            color: white;
+            fill: white;
+            stroke: white;
+            stroke-width: 0;
         }
         
-        .ww-method-info strong {
+        .ww-auth-method-info strong {
             display: block;
             font-size: 14px;
             font-weight: 500;
-            color: var(--ww-text);
+            color: #ffffff;
             margin-bottom: 2px;
         }
         
-        .ww-method-info span {
+        .ww-auth-method-info span {
             font-size: 12px;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
         }
         
-        /* OTP Input */
-        .ww-otp-container {
+        /* OTP */
+        .ww-auth-otp-header {
             text-align: center;
-            margin: 24px 0;
+            margin-bottom: 20px;
         }
         
-        .ww-otp-label {
+        .ww-auth-otp-label {
             font-size: 14px;
-            color: var(--ww-text-muted);
-            margin-bottom: 8px;
+            color: #9ca3af;
+            margin-bottom: 4px;
         }
         
-        .ww-otp-destination {
+        .ww-auth-otp-dest {
             font-weight: 600;
-            color: var(--ww-text);
+            color: #ffffff;
         }
         
-        .ww-otp-inputs {
+        .ww-auth-otp-inputs {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
             margin: 24px 0;
         }
         
-        .ww-otp-input {
-            width: 52px;
-            height: 60px;
+        .ww-auth-otp-digit {
+            width: 54px;
+            height: 62px;
             text-align: center;
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
             font-family: inherit;
-            color: var(--ww-text);
-            background: var(--ww-input-bg);
-            border: 1px solid var(--ww-border);
+            color: #ffffff;
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
             border-radius: 12px;
             outline: none;
             transition: all 0.2s ease;
         }
         
-        .ww-otp-input:focus {
-            border-color: var(--ww-primary);
+        .ww-auth-otp-digit:focus {
+            border-color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
         
-        .ww-otp-input.filled {
-            border-color: var(--ww-primary);
+        .ww-auth-otp-digit.filled {
+            border-color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             background: rgba(16, 185, 129, 0.1);
         }
         
+        /* Biometric */
+        .ww-auth-biometric {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background: #0f0f0f;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .ww-auth-biometric:hover {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+        }
+        
+        .ww-auth-biometric svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+        }
+        
         /* Resend */
-        .ww-resend {
+        .ww-auth-resend {
             text-align: center;
             font-size: 13px;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
             margin-top: 16px;
         }
         
-        .ww-resend-btn {
+        .ww-auth-resend-btn {
             background: none;
             border: none;
-            color: var(--ww-primary);
+            color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
             font-weight: 500;
             cursor: pointer;
             font-size: 13px;
             font-family: inherit;
         }
         
-        .ww-resend-btn:hover {
+        .ww-auth-resend-btn:hover {
             text-decoration: underline;
         }
         
-        /* Back Button */
-        .ww-back {
+        /* Back */
+        .ww-auth-back {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             background: none;
             border: none;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
             font-size: 14px;
             font-family: inherit;
             cursor: pointer;
@@ -526,17 +559,20 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
             padding: 0;
         }
         
-        .ww-back:hover {
-            color: var(--ww-text);
+        .ww-auth-back:hover {
+            color: #ffffff;
         }
         
-        .ww-back svg {
+        .ww-auth-back svg {
             width: 16px;
             height: 16px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
         }
         
         /* Message */
-        .ww-message {
+        .ww-auth-message {
             padding: 12px 14px;
             border-radius: 10px;
             font-size: 13px;
@@ -544,31 +580,29 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
             display: none;
         }
         
-        .ww-message.show {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .ww-auth-message.show {
+            display: block;
         }
         
-        .ww-message.error {
+        .ww-auth-message.error {
             background: rgba(239, 68, 68, 0.15);
             color: #fca5a5;
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
         
-        .ww-message.success {
+        .ww-auth-message.success {
             background: rgba(16, 185, 129, 0.15);
             color: #6ee7b7;
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
         
-        /* QR Code */
-        .ww-qr-container {
+        /* QR */
+        .ww-auth-qr {
             text-align: center;
             padding: 20px 0;
         }
         
-        .ww-qr-wrapper {
+        .ww-auth-qr-wrap {
             background: white;
             padding: 16px;
             border-radius: 16px;
@@ -576,76 +610,46 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
             margin-bottom: 16px;
         }
         
-        .ww-qr-image {
+        .ww-auth-qr-img {
             width: 180px;
             height: 180px;
             display: block;
         }
         
-        .ww-qr-hint {
+        .ww-auth-qr-hint {
             font-size: 14px;
-            color: var(--ww-text-muted);
+            color: #9ca3af;
         }
         
-        .ww-qr-status {
+        .ww-auth-qr-status {
             margin-top: 12px;
             padding: 10px 14px;
-            background: var(--ww-input-bg);
+            background: #0f0f0f;
             border-radius: 10px;
             font-size: 13px;
-            color: var(--ww-text-muted);
-        }
-        
-        /* Biometric */
-        .ww-biometric-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            padding: 14px;
-            background: var(--ww-input-bg);
-            border: 1px solid var(--ww-border);
-            border-radius: 12px;
-            color: var(--ww-text);
-            font-size: 14px;
-            font-weight: 500;
-            font-family: inherit;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: all 0.2s ease;
-        }
-        
-        .ww-biometric-btn:hover {
-            background: var(--ww-card-hover);
-            border-color: var(--ww-text-muted);
-        }
-        
-        .ww-biometric-btn svg {
-            width: 20px;
-            height: 20px;
+            color: #9ca3af;
         }
         
         /* Footer */
-        .ww-footer {
+        .ww-auth-footer {
             text-align: center;
             margin-top: 24px;
             padding-top: 20px;
-            border-top: 1px solid var(--ww-border);
+            border-top: 1px solid #2a2a2a;
         }
         
-        .ww-footer a {
-            color: var(--ww-text-muted);
+        .ww-auth-footer a {
+            color: #9ca3af;
             font-size: 13px;
             text-decoration: none;
         }
         
-        .ww-footer a:hover {
-            color: var(--ww-primary);
+        .ww-auth-footer a:hover {
+            color: <?php echo esc_attr($branding['primary_color'] ?: '#10B981'); ?>;
         }
         
         /* Turnstile */
-        .ww-turnstile {
+        .ww-auth-turnstile {
             display: flex;
             justify-content: center;
             margin-bottom: 16px;
@@ -653,18 +657,18 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
         
         /* Responsive */
         @media (max-width: 480px) {
-            .ww-card {
-                padding: 24px 20px;
+            .ww-auth-card {
+                padding: 28px 20px;
                 border-radius: 20px;
             }
             
-            .ww-otp-input {
-                width: 46px;
-                height: 54px;
+            .ww-auth-otp-digit {
+                width: 48px;
+                height: 56px;
                 font-size: 20px;
             }
             
-            .ww-otp-inputs {
+            .ww-auth-otp-inputs {
                 gap: 8px;
             }
         }
@@ -674,102 +678,87 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
     <script src="<?php echo esc_url($turnstile->get_script_url()); ?>" async defer></script>
     <?php endif; ?>
 </head>
-<body>
-    <div class="ww-container">
-        <div class="ww-card">
+<body class="ww-auth-page">
+    <div class="ww-auth-container">
+        <div class="ww-auth-card">
+            <!-- Logo -->
+            <div class="ww-auth-logo">
+                <?php if (!empty($branding['logo_url'])): ?>
+                    <img src="<?php echo esc_url($branding['logo_url']); ?>" alt="<?php bloginfo('name'); ?>">
+                <?php else: ?>
+                    <div class="ww-auth-logo-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
             <!-- Header -->
-            <div class="ww-header">
-                <div class="ww-logo">
-                    <?php if (!empty($branding['logo_url'])): ?>
-                        <img src="<?php echo esc_url($branding['logo_url']); ?>" alt="<?php bloginfo('name'); ?>">
-                    <?php else: ?>
-                        <div class="ww-logo-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                            </svg>
-                        </div>
-                    <?php endif; ?>
-                </div>
-                <h1 class="ww-title" id="main-title"><?php echo esc_html($branding['welcome_text'] ?: 'Go ahead and set up your account'); ?></h1>
-                <p class="ww-subtitle" id="main-subtitle">Sign in to continue to your account</p>
+            <div class="ww-auth-header">
+                <h1 class="ww-auth-title" id="pageTitle"><?php echo esc_html($branding['welcome_text'] ?: 'Welcome back'); ?></h1>
+                <p class="ww-auth-subtitle" id="pageSubtitle">Sign in to continue to your account</p>
             </div>
             
             <!-- Message -->
-            <div id="ww-message" class="ww-message"></div>
+            <div id="authMessage" class="ww-auth-message"></div>
             
-            <!-- Main View: Login/Register Tabs -->
-            <div class="ww-view active" id="view-main">
+            <!-- View: Main (Login/Register) -->
+            <div class="ww-auth-view active" id="viewMain">
                 <!-- Tabs -->
-                <div class="ww-tabs">
-                    <button type="button" class="ww-tab active" data-tab="login">Login</button>
-                    <button type="button" class="ww-tab" data-tab="register">Register</button>
+                <div class="ww-auth-tabs">
+                    <button type="button" class="ww-auth-tab active" data-panel="panelLogin">Login</button>
+                    <button type="button" class="ww-auth-tab" data-panel="panelRegister">Register</button>
                 </div>
                 
-                <!-- Login Tab Content -->
-                <div class="ww-tab-content active" id="tab-login">
-                    <form id="form-login">
-                        <div class="ww-form-group">
-                            <label class="ww-label">Email Address</label>
-                            <div class="ww-input-wrapper">
-                                <span class="ww-input-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                        <polyline points="22,6 12,13 2,6"/>
-                                    </svg>
+                <!-- Panel: Login -->
+                <div class="ww-auth-panel active" id="panelLogin">
+                    <form id="formLogin">
+                        <div class="ww-auth-field">
+                            <label class="ww-auth-label">Email Address</label>
+                            <div class="ww-auth-input-wrap">
+                                <span class="ww-auth-input-icon">
+                                    <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                                 </span>
-                                <input type="email" id="login-email" class="ww-input" placeholder="you@example.com" required autocomplete="email">
+                                <input type="email" id="loginEmail" class="ww-auth-input" placeholder="you@example.com" required autocomplete="email">
                             </div>
                         </div>
                         
-                        <div class="ww-form-group">
-                            <label class="ww-label">Password</label>
-                            <div class="ww-input-wrapper">
-                                <span class="ww-input-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                    </svg>
+                        <div class="ww-auth-field">
+                            <label class="ww-auth-label">Password</label>
+                            <div class="ww-auth-input-wrap">
+                                <span class="ww-auth-input-icon">
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                 </span>
-                                <input type="password" id="login-password" class="ww-input" style="padding-right: 44px;" placeholder="Enter your password" required autocomplete="current-password">
-                                <button type="button" class="ww-password-toggle" onclick="togglePassword('login-password', this)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                        <circle cx="12" cy="12" r="3"/>
-                                    </svg>
+                                <input type="password" id="loginPassword" class="ww-auth-input has-toggle" placeholder="Enter your password" required autocomplete="current-password">
+                                <button type="button" class="ww-auth-toggle-pwd" onclick="togglePwd('loginPassword')">
+                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
                             </div>
                         </div>
                         
-                        <div class="ww-options-row">
-                            <label class="ww-checkbox">
-                                <input type="checkbox" id="remember-me">
+                        <div class="ww-auth-options">
+                            <label class="ww-auth-checkbox">
+                                <input type="checkbox" id="rememberMe">
                                 <span>Remember me</span>
                             </label>
-                            <a href="#" class="ww-link" onclick="showForgotPassword(); return false;">Forgot Password?</a>
+                            <a href="#" class="ww-auth-link" onclick="alert('Password reset link will be sent to your email.'); return false;">Forgot Password?</a>
                         </div>
                         
                         <?php if ($turnstile->is_enabled()): ?>
-                        <div class="ww-turnstile">
-                            <?php echo $turnstile->render_widget(); ?>
-                        </div>
+                        <div class="ww-auth-turnstile"><?php echo $turnstile->render_widget(); ?></div>
                         <?php endif; ?>
                         
-                        <button type="submit" class="ww-btn ww-btn-primary" id="btn-login">
-                            Login
-                        </button>
+                        <button type="submit" class="ww-auth-btn ww-auth-btn-primary" id="btnLogin">Login</button>
                     </form>
                     
-                    <div class="ww-divider">Or continue with</div>
+                    <div class="ww-auth-divider">Or continue with</div>
                     
-                    <div class="ww-methods">
+                    <div class="ww-auth-methods">
                         <?php if ($methods['whatsapp']): ?>
-                        <button type="button" class="ww-method-btn" data-method="whatsapp">
-                            <div class="ww-method-icon whatsapp">
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                                </svg>
+                        <button type="button" class="ww-auth-method" data-method="whatsapp">
+                            <div class="ww-auth-method-icon whatsapp">
+                                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                             </div>
-                            <div class="ww-method-info">
+                            <div class="ww-auth-method-info">
                                 <strong>WhatsApp OTP</strong>
                                 <span>Get code on WhatsApp</span>
                             </div>
@@ -777,13 +766,11 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
                         <?php endif; ?>
                         
                         <?php if ($methods['passkeys']): ?>
-                        <button type="button" class="ww-method-btn" data-method="passkey">
-                            <div class="ww-method-icon passkey">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
-                                </svg>
+                        <button type="button" class="ww-auth-method" data-method="passkey">
+                            <div class="ww-auth-method-icon passkey">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
                             </div>
-                            <div class="ww-method-info">
+                            <div class="ww-auth-method-info">
                                 <strong>Biometric Verification</strong>
                                 <span>Use Face ID or Touch ID</span>
                             </div>
@@ -791,16 +778,11 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
                         <?php endif; ?>
                         
                         <?php if ($methods['qr']): ?>
-                        <button type="button" class="ww-method-btn" data-method="qr">
-                            <div class="ww-method-icon qr">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="7" height="7"/>
-                                    <rect x="14" y="3" width="7" height="7"/>
-                                    <rect x="14" y="14" width="7" height="7"/>
-                                    <rect x="3" y="14" width="7" height="7"/>
-                                </svg>
+                        <button type="button" class="ww-auth-method" data-method="qr">
+                            <div class="ww-auth-method-icon qr">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                             </div>
-                            <div class="ww-method-info">
+                            <div class="ww-auth-method-info">
                                 <strong>QR Code</strong>
                                 <span>Scan with your phone</span>
                             </div>
@@ -809,193 +791,151 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
                     </div>
                 </div>
                 
-                <!-- Register Tab Content -->
-                <div class="ww-tab-content" id="tab-register">
-                    <form id="form-register">
-                        <div class="ww-form-group">
-                            <label class="ww-label">Full Name</label>
-                            <div class="ww-input-wrapper">
-                                <span class="ww-input-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                        <circle cx="12" cy="7" r="4"/>
-                                    </svg>
+                <!-- Panel: Register -->
+                <div class="ww-auth-panel" id="panelRegister">
+                    <form id="formRegister">
+                        <div class="ww-auth-field">
+                            <label class="ww-auth-label">Full Name</label>
+                            <div class="ww-auth-input-wrap">
+                                <span class="ww-auth-input-icon">
+                                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                 </span>
-                                <input type="text" id="register-name" class="ww-input" placeholder="John Doe" required>
+                                <input type="text" id="registerName" class="ww-auth-input" placeholder="John Doe" required>
                             </div>
                         </div>
                         
-                        <div class="ww-form-group">
-                            <label class="ww-label">Email Address</label>
-                            <div class="ww-input-wrapper">
-                                <span class="ww-input-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                        <polyline points="22,6 12,13 2,6"/>
-                                    </svg>
+                        <div class="ww-auth-field">
+                            <label class="ww-auth-label">Email Address</label>
+                            <div class="ww-auth-input-wrap">
+                                <span class="ww-auth-input-icon">
+                                    <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                                 </span>
-                                <input type="email" id="register-email" class="ww-input" placeholder="you@example.com" required autocomplete="email">
+                                <input type="email" id="registerEmail" class="ww-auth-input" placeholder="you@example.com" required autocomplete="email">
                             </div>
                         </div>
                         
-                        <div class="ww-form-group">
-                            <label class="ww-label">Phone Number</label>
-                            <div class="ww-input-wrapper">
-                                <span class="ww-input-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                                    </svg>
+                        <div class="ww-auth-field">
+                            <label class="ww-auth-label">Phone Number</label>
+                            <div class="ww-auth-input-wrap">
+                                <span class="ww-auth-input-icon">
+                                    <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                                 </span>
-                                <input type="tel" id="register-phone" class="ww-input" placeholder="+1 234 567 8900" autocomplete="tel">
+                                <input type="tel" id="registerPhone" class="ww-auth-input" placeholder="+1 234 567 8900" autocomplete="tel">
                             </div>
                         </div>
                         
-                        <div class="ww-form-group">
-                            <label class="ww-label">Password</label>
-                            <div class="ww-input-wrapper">
-                                <span class="ww-input-icon">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                                    </svg>
+                        <div class="ww-auth-field">
+                            <label class="ww-auth-label">Password</label>
+                            <div class="ww-auth-input-wrap">
+                                <span class="ww-auth-input-icon">
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                                 </span>
-                                <input type="password" id="register-password" class="ww-input" style="padding-right: 44px;" placeholder="Create a password" required autocomplete="new-password">
-                                <button type="button" class="ww-password-toggle" onclick="togglePassword('register-password', this)">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-icon">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                        <circle cx="12" cy="12" r="3"/>
-                                    </svg>
+                                <input type="password" id="registerPassword" class="ww-auth-input has-toggle" placeholder="Create a password" required autocomplete="new-password">
+                                <button type="button" class="ww-auth-toggle-pwd" onclick="togglePwd('registerPassword')">
+                                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
                             </div>
                         </div>
                         
                         <?php if ($turnstile->is_enabled()): ?>
-                        <div class="ww-turnstile">
-                            <?php echo $turnstile->render_widget(); ?>
-                        </div>
+                        <div class="ww-auth-turnstile"><?php echo $turnstile->render_widget(); ?></div>
                         <?php endif; ?>
                         
-                        <button type="submit" class="ww-btn ww-btn-primary" id="btn-register">
-                            Create Account
-                        </button>
+                        <button type="submit" class="ww-auth-btn ww-auth-btn-primary" id="btnRegister">Create Account</button>
                     </form>
                 </div>
             </div>
             
-            <!-- OTP Verification View -->
-            <div class="ww-view" id="view-otp">
-                <button type="button" class="ww-back" onclick="showView('main')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
+            <!-- View: OTP -->
+            <div class="ww-auth-view" id="viewOTP">
+                <button type="button" class="ww-auth-back" onclick="showView('viewMain')">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                     Back
                 </button>
                 
-                <div class="ww-header" style="margin-bottom: 16px;">
-                    <div class="ww-logo">
-                        <div class="ww-logo-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                                <polyline points="22 4 12 14.01 9 11.01"/>
-                            </svg>
-                        </div>
+                <div class="ww-auth-logo" style="margin-bottom: 16px;">
+                    <div class="ww-auth-logo-icon">
+                        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                     </div>
-                    <h1 class="ww-title">Verify your account</h1>
                 </div>
                 
-                <div class="ww-otp-container">
-                    <p class="ww-otp-label">We sent a verification code to</p>
-                    <p class="ww-otp-destination" id="otp-destination"></p>
+                <div class="ww-auth-header" style="margin-bottom: 8px;">
+                    <h1 class="ww-auth-title">Verify your account</h1>
                 </div>
                 
-                <form id="form-otp">
-                    <div class="ww-otp-inputs">
-                        <input type="text" class="ww-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
-                        <input type="text" class="ww-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
-                        <input type="text" class="ww-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
-                        <input type="text" class="ww-otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                <div class="ww-auth-otp-header">
+                    <p class="ww-auth-otp-label">We sent a verification code to</p>
+                    <p class="ww-auth-otp-dest" id="otpDest"></p>
+                </div>
+                
+                <form id="formOTP">
+                    <div class="ww-auth-otp-inputs">
+                        <input type="text" class="ww-auth-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                        <input type="text" class="ww-auth-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                        <input type="text" class="ww-auth-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
+                        <input type="text" class="ww-auth-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
                     </div>
                     
-                    <button type="submit" class="ww-btn ww-btn-primary" id="btn-verify" disabled>
-                        Verify
-                    </button>
+                    <button type="submit" class="ww-auth-btn ww-auth-btn-primary" id="btnVerify" disabled>Verify</button>
                 </form>
                 
                 <?php if ($methods['passkeys']): ?>
-                <button type="button" class="ww-biometric-btn" id="btn-biometric">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/>
-                    </svg>
+                <button type="button" class="ww-auth-biometric" id="btnBiometric">
+                    <svg viewBox="0 0 24 24"><path d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
                     Biometric Verification
                 </button>
                 <?php endif; ?>
                 
-                <div class="ww-resend">
-                    <span id="resend-timer">Resend code in <strong>60s</strong></span>
-                    <button type="button" class="ww-resend-btn" id="btn-resend" style="display: none;">
-                        Resend Code
-                    </button>
+                <div class="ww-auth-resend">
+                    <span id="resendTimer">Resend code in <strong>60s</strong></span>
+                    <button type="button" class="ww-auth-resend-btn" id="btnResend" style="display: none;">Resend Code</button>
                 </div>
             </div>
             
-            <!-- QR View -->
-            <div class="ww-view" id="view-qr">
-                <button type="button" class="ww-back" onclick="showView('main'); stopQRPolling();">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
+            <!-- View: QR -->
+            <div class="ww-auth-view" id="viewQR">
+                <button type="button" class="ww-auth-back" onclick="showView('viewMain'); stopQR();">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                     Back
                 </button>
                 
-                <div class="ww-qr-container" id="qr-container">
-                    <div class="ww-spinner" style="margin: 40px auto;"></div>
+                <div class="ww-auth-qr" id="qrContainer">
+                    <div class="ww-auth-spinner" style="margin: 40px auto;"></div>
                 </div>
                 
-                <div class="ww-qr-status" id="qr-status">
-                    Waiting for authorization...
-                </div>
+                <div class="ww-auth-qr-status" id="qrStatus">Waiting for authorization...</div>
                 
-                <button type="button" class="ww-btn ww-btn-outline" style="margin-top: 16px;" id="btn-refresh-qr">
-                    Refresh QR Code
-                </button>
+                <button type="button" class="ww-auth-btn ww-auth-btn-outline" style="margin-top: 16px;" id="btnRefreshQR">Refresh QR Code</button>
             </div>
             
-            <!-- WhatsApp View -->
-            <div class="ww-view" id="view-whatsapp">
-                <button type="button" class="ww-back" onclick="showView('main')">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
+            <!-- View: WhatsApp -->
+            <div class="ww-auth-view" id="viewWhatsApp">
+                <button type="button" class="ww-auth-back" onclick="showView('viewMain')">
+                    <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                     Back
                 </button>
                 
-                <form id="form-whatsapp">
-                    <div class="ww-form-group">
-                        <label class="ww-label">WhatsApp Number</label>
-                        <div class="ww-input-wrapper">
-                            <span class="ww-input-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                                </svg>
+                <form id="formWhatsApp">
+                    <div class="ww-auth-field">
+                        <label class="ww-auth-label">WhatsApp Number</label>
+                        <div class="ww-auth-input-wrap">
+                            <span class="ww-auth-input-icon">
+                                <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                             </span>
-                            <input type="tel" id="whatsapp-phone" class="ww-input" placeholder="+1 234 567 8900" required autocomplete="tel">
+                            <input type="tel" id="whatsappPhone" class="ww-auth-input" placeholder="+1 234 567 8900" required autocomplete="tel">
                         </div>
                     </div>
                     
                     <?php if ($turnstile->is_enabled()): ?>
-                    <div class="ww-turnstile">
-                        <?php echo $turnstile->render_widget(); ?>
-                    </div>
+                    <div class="ww-auth-turnstile"><?php echo $turnstile->render_widget(); ?></div>
                     <?php endif; ?>
                     
-                    <button type="submit" class="ww-btn ww-btn-primary" id="btn-send-whatsapp">
-                        Send Code
-                    </button>
+                    <button type="submit" class="ww-auth-btn ww-auth-btn-primary" id="btnSendWhatsApp">Send Code</button>
                 </form>
             </div>
             
             <!-- Footer -->
-            <div class="ww-footer">
+            <div class="ww-auth-footer">
                 <a href="<?php echo esc_url(home_url('/')); ?>">Return to <?php bloginfo('name'); ?></a>
             </div>
         </div>
@@ -1005,492 +945,345 @@ $redirect_to = isset($_GET['redirect_to']) ? esc_url_raw($_GET['redirect_to']) :
     (function() {
         'use strict';
         
-        const API_URL = '<?php echo esc_url_raw(rest_url('ww-auth/v1/')); ?>';
-        const NONCE = '<?php echo wp_create_nonce('wp_rest'); ?>';
-        const REDIRECT_TO = '<?php echo esc_js($redirect_to); ?>';
+        var API = '<?php echo esc_url_raw(rest_url('ww-auth/v1/')); ?>';
+        var NONCE = '<?php echo wp_create_nonce('wp_rest'); ?>';
+        var REDIRECT = '<?php echo esc_js($redirect_to); ?>' || '/';
         
-        let currentMethod = 'email';
-        let otpDestination = '';
-        let resendTimer = null;
-        let qrPollInterval = null;
-        let qrSessionId = null;
+        var currentMethod = 'email';
+        var otpDest = '';
+        var resendInt = null;
+        var qrInt = null;
+        var qrSession = null;
         
         // Tab switching
-        document.querySelectorAll('.ww-tab').forEach(tab => {
+        document.querySelectorAll('.ww-auth-tab').forEach(function(tab) {
             tab.addEventListener('click', function() {
-                document.querySelectorAll('.ww-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.ww-tab-content').forEach(c => c.classList.remove('active'));
+                var panelId = this.getAttribute('data-panel');
+                
+                document.querySelectorAll('.ww-auth-tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.ww-auth-panel').forEach(function(p) { p.classList.remove('active'); });
                 
                 this.classList.add('active');
-                const tabId = this.dataset.tab;
-                document.getElementById('tab-' + tabId).classList.add('active');
+                document.getElementById(panelId).classList.add('active');
                 
-                // Update title
-                const title = document.getElementById('main-title');
-                const subtitle = document.getElementById('main-subtitle');
-                if (tabId === 'register') {
+                var title = document.getElementById('pageTitle');
+                var subtitle = document.getElementById('pageSubtitle');
+                if (panelId === 'panelRegister') {
                     title.textContent = 'Create your account';
                     subtitle.textContent = 'Get started with a free account';
                 } else {
-                    title.textContent = '<?php echo esc_js($branding['welcome_text'] ?: 'Go ahead and set up your account'); ?>';
+                    title.textContent = '<?php echo esc_js($branding['welcome_text'] ?: 'Welcome back'); ?>';
                     subtitle.textContent = 'Sign in to continue to your account';
                 }
             });
         });
         
         // View switching
-        window.showView = function(viewId) {
-            document.querySelectorAll('.ww-view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + viewId).classList.add('active');
-            hideMessage();
+        window.showView = function(id) {
+            document.querySelectorAll('.ww-auth-view').forEach(function(v) { v.classList.remove('active'); });
+            document.getElementById(id).classList.add('active');
+            hideMsg();
         };
-        
-        // Method selection
-        document.querySelectorAll('.ww-method-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const method = this.dataset.method;
-                currentMethod = method;
-                
-                if (method === 'qr') {
-                    showView('qr');
-                    generateQRCode();
-                } else if (method === 'whatsapp') {
-                    showView('whatsapp');
-                } else if (method === 'passkey') {
-                    startPasskeyAuth();
-                }
-            });
-        });
         
         // Password toggle
-        window.togglePassword = function(inputId, btn) {
-            const input = document.getElementById(inputId);
-            const type = input.type === 'password' ? 'text' : 'password';
-            input.type = type;
+        window.togglePwd = function(id) {
+            var inp = document.getElementById(id);
+            inp.type = inp.type === 'password' ? 'text' : 'password';
         };
         
-        // Message functions
-        function showMessage(text, type = 'error') {
-            const msg = document.getElementById('ww-message');
-            msg.textContent = text;
-            msg.className = 'ww-message show ' + type;
+        // Messages
+        function showMsg(txt, type) {
+            var m = document.getElementById('authMessage');
+            m.textContent = txt;
+            m.className = 'ww-auth-message show ' + (type || 'error');
+        }
+        function hideMsg() {
+            document.getElementById('authMessage').className = 'ww-auth-message';
         }
         
-        function hideMessage() {
-            document.getElementById('ww-message').className = 'ww-message';
-        }
-        
-        // Loading state
-        function setLoading(btn, loading) {
-            if (loading) {
+        // Loading
+        function setLoad(btn, on) {
+            if (on) {
                 btn.disabled = true;
-                btn.dataset.text = btn.innerHTML;
-                btn.innerHTML = '<span class="ww-spinner"></span>';
+                btn.setAttribute('data-txt', btn.innerHTML);
+                btn.innerHTML = '<span class="ww-auth-spinner"></span>';
             } else {
                 btn.disabled = false;
-                btn.innerHTML = btn.dataset.text || btn.innerHTML;
+                btn.innerHTML = btn.getAttribute('data-txt') || btn.innerHTML;
             }
         }
         
-        // API call helper
-        async function apiCall(endpoint, data = {}, method = 'POST') {
-            const options = {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': NONCE
-                }
+        // API
+        function api(endpoint, data, method) {
+            var opts = {
+                method: method || 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': NONCE }
             };
-            if (method === 'POST') {
-                options.body = JSON.stringify(data);
-            }
-            const response = await fetch(API_URL + endpoint, options);
-            return response.json();
+            if (method !== 'GET') opts.body = JSON.stringify(data || {});
+            return fetch(API + endpoint, opts).then(function(r) { return r.json(); });
         }
         
-        function getTurnstileToken() {
-            if (typeof turnstile !== 'undefined') {
-                return turnstile.getResponse() || '';
-            }
+        function getTurnstile() {
+            if (typeof turnstile !== 'undefined') return turnstile.getResponse() || '';
             return '';
         }
         
+        // Method buttons
+        document.querySelectorAll('.ww-auth-method').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var m = this.getAttribute('data-method');
+                currentMethod = m;
+                if (m === 'qr') { showView('viewQR'); genQR(); }
+                else if (m === 'whatsapp') { showView('viewWhatsApp'); }
+                else if (m === 'passkey') { startPasskey(); }
+            });
+        });
+        
         // Login form
-        document.getElementById('form-login')?.addEventListener('submit', async function(e) {
+        document.getElementById('formLogin').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-login');
-            const email = document.getElementById('login-email').value;
+            var btn = document.getElementById('btnLogin');
+            var email = document.getElementById('loginEmail').value;
+            setLoad(btn, true);
+            hideMsg();
             
-            setLoading(btn, true);
-            hideMessage();
-            
-            try {
-                // Send email OTP
-                const result = await apiCall('email/send', {
-                    email: email,
-                    turnstile_token: getTurnstileToken()
-                });
-                
-                if (result.success) {
-                    otpDestination = email;
+            api('email/send', { email: email, turnstile_token: getTurnstile() }).then(function(r) {
+                if (r.success) {
+                    otpDest = email;
                     currentMethod = 'email';
-                    document.getElementById('otp-destination').textContent = email;
-                    showView('otp');
-                    startResendTimer();
-                    focusFirstOTP();
+                    document.getElementById('otpDest').textContent = email;
+                    showView('viewOTP');
+                    startTimer();
+                    focusOTP();
                 } else {
-                    showMessage(result.error || 'Failed to send code');
+                    showMsg(r.error || 'Failed to send code');
                 }
-            } catch (err) {
-                showMessage('Network error. Please try again.');
-            }
-            
-            setLoading(btn, false);
+                setLoad(btn, false);
+            }).catch(function() { showMsg('Network error'); setLoad(btn, false); });
         });
         
         // Register form
-        document.getElementById('form-register')?.addEventListener('submit', async function(e) {
+        document.getElementById('formRegister').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-register');
-            const email = document.getElementById('register-email').value;
+            var btn = document.getElementById('btnRegister');
+            var email = document.getElementById('registerEmail').value;
+            setLoad(btn, true);
+            hideMsg();
             
-            setLoading(btn, true);
-            hideMessage();
-            
-            try {
-                const result = await apiCall('email/send', {
-                    email: email,
-                    turnstile_token: getTurnstileToken()
-                });
-                
-                if (result.success) {
-                    otpDestination = email;
+            api('email/send', { email: email, turnstile_token: getTurnstile() }).then(function(r) {
+                if (r.success) {
+                    otpDest = email;
                     currentMethod = 'email';
-                    document.getElementById('otp-destination').textContent = email;
-                    showView('otp');
-                    startResendTimer();
-                    focusFirstOTP();
+                    document.getElementById('otpDest').textContent = email;
+                    showView('viewOTP');
+                    startTimer();
+                    focusOTP();
                 } else {
-                    showMessage(result.error || 'Failed to send code');
+                    showMsg(r.error || 'Failed to send code');
                 }
-            } catch (err) {
-                showMessage('Network error. Please try again.');
-            }
-            
-            setLoading(btn, false);
+                setLoad(btn, false);
+            }).catch(function() { showMsg('Network error'); setLoad(btn, false); });
         });
         
         // WhatsApp form
-        document.getElementById('form-whatsapp')?.addEventListener('submit', async function(e) {
+        document.getElementById('formWhatsApp').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-send-whatsapp');
-            const phone = document.getElementById('whatsapp-phone').value;
+            var btn = document.getElementById('btnSendWhatsApp');
+            var phone = document.getElementById('whatsappPhone').value;
+            setLoad(btn, true);
+            hideMsg();
             
-            setLoading(btn, true);
-            hideMessage();
-            
-            try {
-                const result = await apiCall('whatsapp/send', {
-                    phone: phone,
-                    turnstile_token: getTurnstileToken()
-                });
-                
-                if (result.success) {
-                    otpDestination = phone;
+            api('whatsapp/send', { phone: phone, turnstile_token: getTurnstile() }).then(function(r) {
+                if (r.success) {
+                    otpDest = phone;
                     currentMethod = 'whatsapp';
-                    document.getElementById('otp-destination').textContent = phone;
-                    showView('otp');
-                    startResendTimer();
-                    focusFirstOTP();
+                    document.getElementById('otpDest').textContent = phone;
+                    showView('viewOTP');
+                    startTimer();
+                    focusOTP();
                 } else {
-                    showMessage(result.error || 'Failed to send code');
+                    showMsg(r.error || 'Failed to send code');
                 }
-            } catch (err) {
-                showMessage('Network error. Please try again.');
-            }
-            
-            setLoading(btn, false);
+                setLoad(btn, false);
+            }).catch(function() { showMsg('Network error'); setLoad(btn, false); });
         });
         
         // OTP inputs
-        const otpInputs = document.querySelectorAll('.ww-otp-input');
+        var otpInputs = document.querySelectorAll('.ww-auth-otp-digit');
         
-        function focusFirstOTP() {
-            otpInputs[0]?.focus();
-        }
+        function focusOTP() { otpInputs[0].focus(); }
+        function getOTP() { return Array.from(otpInputs).map(function(i) { return i.value; }).join(''); }
+        function clearOTP() { otpInputs.forEach(function(i) { i.value = ''; i.classList.remove('filled'); }); document.getElementById('btnVerify').disabled = true; }
+        function checkOTP() { document.getElementById('btnVerify').disabled = getOTP().length !== 4; }
         
-        function getOTP() {
-            return Array.from(otpInputs).map(i => i.value).join('');
-        }
-        
-        function clearOTP() {
-            otpInputs.forEach(i => {
-                i.value = '';
-                i.classList.remove('filled');
-            });
-            document.getElementById('btn-verify').disabled = true;
-        }
-        
-        function checkOTPComplete() {
-            const otp = getOTP();
-            document.getElementById('btn-verify').disabled = otp.length !== 4;
-        }
-        
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('input', function() {
+        otpInputs.forEach(function(inp, idx) {
+            inp.addEventListener('input', function() {
                 this.value = this.value.replace(/[^0-9]/g, '');
-                
                 if (this.value) {
                     this.classList.add('filled');
-                    if (index < otpInputs.length - 1) {
-                        otpInputs[index + 1].focus();
-                    }
+                    if (idx < otpInputs.length - 1) otpInputs[idx + 1].focus();
                 } else {
                     this.classList.remove('filled');
                 }
-                checkOTPComplete();
+                checkOTP();
             });
-            
-            input.addEventListener('keydown', function(e) {
-                if (e.key === 'Backspace' && !this.value && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
+            inp.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && idx > 0) otpInputs[idx - 1].focus();
             });
-            
-            input.addEventListener('paste', function(e) {
+            inp.addEventListener('paste', function(e) {
                 e.preventDefault();
-                const paste = (e.clipboardData || window.clipboardData).getData('text');
-                const digits = paste.replace(/[^0-9]/g, '').slice(0, 4);
-                digits.split('').forEach((d, i) => {
-                    if (otpInputs[i]) {
-                        otpInputs[i].value = d;
-                        otpInputs[i].classList.add('filled');
-                    }
+                var txt = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+                txt.split('').forEach(function(d, i) {
+                    if (otpInputs[i]) { otpInputs[i].value = d; otpInputs[i].classList.add('filled'); }
                 });
-                checkOTPComplete();
+                checkOTP();
             });
         });
         
-        // OTP verification
-        document.getElementById('form-otp')?.addEventListener('submit', async function(e) {
+        // OTP verify
+        document.getElementById('formOTP').addEventListener('submit', function(e) {
             e.preventDefault();
-            const btn = document.getElementById('btn-verify');
-            const otp = getOTP();
+            var btn = document.getElementById('btnVerify');
+            var otp = getOTP();
+            setLoad(btn, true);
+            hideMsg();
             
-            setLoading(btn, true);
-            hideMessage();
+            var endpoint = currentMethod === 'whatsapp' ? 'whatsapp/verify' : 'email/verify';
+            var data = currentMethod === 'whatsapp' ? { phone: otpDest, otp: otp } : { email: otpDest, otp: otp };
             
-            const endpoint = currentMethod === 'whatsapp' ? 'whatsapp/verify' : 'email/verify';
-            const data = currentMethod === 'whatsapp' 
-                ? { phone: otpDestination, otp: otp }
-                : { email: otpDestination, otp: otp };
-            
-            try {
-                const result = await apiCall(endpoint, data);
-                
-                if (result.success) {
-                    showMessage('Login successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = result.redirect || REDIRECT_TO || '/';
-                    }, 500);
+            api(endpoint, data).then(function(r) {
+                if (r.success) {
+                    showMsg('Login successful! Redirecting...', 'success');
+                    setTimeout(function() { window.location.href = r.redirect || REDIRECT; }, 500);
                 } else {
-                    showMessage(result.error || 'Invalid code');
+                    showMsg(r.error || 'Invalid code');
                     clearOTP();
-                    focusFirstOTP();
+                    focusOTP();
                 }
-            } catch (err) {
-                showMessage('Network error. Please try again.');
-            }
-            
-            setLoading(btn, false);
+                setLoad(btn, false);
+            }).catch(function() { showMsg('Network error'); setLoad(btn, false); });
         });
         
         // Resend timer
-        function startResendTimer() {
-            let seconds = 60;
-            const timerEl = document.getElementById('resend-timer');
-            const resendBtn = document.getElementById('btn-resend');
-            
-            timerEl.style.display = 'inline';
-            resendBtn.style.display = 'none';
-            
-            if (resendTimer) clearInterval(resendTimer);
-            
-            resendTimer = setInterval(() => {
-                seconds--;
-                timerEl.innerHTML = `Resend code in <strong>${seconds}s</strong>`;
-                
-                if (seconds <= 0) {
-                    clearInterval(resendTimer);
-                    timerEl.style.display = 'none';
-                    resendBtn.style.display = 'inline';
+        function startTimer() {
+            var sec = 60;
+            var el = document.getElementById('resendTimer');
+            var btn = document.getElementById('btnResend');
+            el.style.display = 'inline';
+            btn.style.display = 'none';
+            if (resendInt) clearInterval(resendInt);
+            resendInt = setInterval(function() {
+                sec--;
+                el.innerHTML = 'Resend code in <strong>' + sec + 's</strong>';
+                if (sec <= 0) {
+                    clearInterval(resendInt);
+                    el.style.display = 'none';
+                    btn.style.display = 'inline';
                 }
             }, 1000);
         }
         
-        document.getElementById('btn-resend')?.addEventListener('click', async function() {
+        document.getElementById('btnResend').addEventListener('click', function() {
             this.disabled = true;
-            
-            try {
-                const endpoint = currentMethod === 'whatsapp' ? 'whatsapp/send' : 'email/send';
-                const data = currentMethod === 'whatsapp' 
-                    ? { phone: otpDestination } 
-                    : { email: otpDestination };
-                
-                const result = await apiCall(endpoint, data);
-                
-                if (result.success) {
-                    showMessage('Code resent!', 'success');
-                    startResendTimer();
+            var endpoint = currentMethod === 'whatsapp' ? 'whatsapp/send' : 'email/send';
+            var data = currentMethod === 'whatsapp' ? { phone: otpDest } : { email: otpDest };
+            api(endpoint, data).then(function(r) {
+                if (r.success) {
+                    showMsg('Code resent!', 'success');
+                    startTimer();
                     clearOTP();
-                    focusFirstOTP();
+                    focusOTP();
                 } else {
-                    showMessage(result.error || 'Failed to resend');
+                    showMsg(r.error || 'Failed');
                 }
-            } catch (err) {
-                showMessage('Network error');
-            }
-            
-            this.disabled = false;
+                document.getElementById('btnResend').disabled = false;
+            }).catch(function() { showMsg('Network error'); document.getElementById('btnResend').disabled = false; });
         });
         
-        // QR Code
-        async function generateQRCode() {
-            const container = document.getElementById('qr-container');
-            container.innerHTML = '<div class="ww-spinner" style="margin: 40px auto;"></div>';
-            document.getElementById('qr-status').textContent = 'Generating QR code...';
+        // QR
+        function genQR() {
+            var c = document.getElementById('qrContainer');
+            c.innerHTML = '<div class="ww-auth-spinner" style="margin:40px auto;"></div>';
+            document.getElementById('qrStatus').textContent = 'Generating QR code...';
             
-            try {
-                const result = await apiCall('qr/generate', {});
-                
-                if (result.success) {
-                    qrSessionId = result.session_id;
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(result.qr_data)}`;
-                    
-                    container.innerHTML = `
-                        <div class="ww-qr-wrapper">
-                            <img src="${qrUrl}" alt="QR Code" class="ww-qr-image">
-                        </div>
-                        <p class="ww-qr-hint">Scan with your phone to log in</p>
-                    `;
-                    
-                    document.getElementById('qr-status').textContent = 'Waiting for authorization...';
-                    startQRPolling();
+            api('qr/generate', {}).then(function(r) {
+                if (r.success) {
+                    qrSession = r.session_id;
+                    var url = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(r.qr_data);
+                    c.innerHTML = '<div class="ww-auth-qr-wrap"><img src="' + url + '" class="ww-auth-qr-img" alt="QR"></div><p class="ww-auth-qr-hint">Scan with your phone to log in</p>';
+                    document.getElementById('qrStatus').textContent = 'Waiting for authorization...';
+                    startQR();
                 } else {
-                    container.innerHTML = '<p style="color: var(--ww-error);">Failed to generate QR code</p>';
+                    c.innerHTML = '<p style="color:#ef4444;">Failed to generate QR</p>';
                 }
-            } catch (err) {
-                container.innerHTML = '<p style="color: var(--ww-error);">Network error</p>';
-            }
+            }).catch(function() { c.innerHTML = '<p style="color:#ef4444;">Network error</p>'; });
         }
         
-        function startQRPolling() {
-            if (qrPollInterval) clearInterval(qrPollInterval);
-            
-            qrPollInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(API_URL + `qr/poll?session_id=${qrSessionId}`, {
-                        headers: { 'X-WP-Nonce': NONCE }
-                    });
-                    const result = await response.json();
-                    
-                    if (result.status === 'authorized') {
-                        stopQRPolling();
-                        document.getElementById('qr-status').textContent = 'Authorized! Redirecting...';
-                        showMessage('Login successful!', 'success');
-                        setTimeout(() => {
-                            window.location.href = result.redirect || REDIRECT_TO || '/';
-                        }, 500);
-                    } else if (result.status === 'expired') {
-                        stopQRPolling();
-                        document.getElementById('qr-status').textContent = 'QR code expired. Please refresh.';
-                    }
-                } catch (err) {
-                    // Silent fail
-                }
+        function startQR() {
+            if (qrInt) clearInterval(qrInt);
+            qrInt = setInterval(function() {
+                fetch(API + 'qr/poll?session_id=' + qrSession, { headers: { 'X-WP-Nonce': NONCE } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(r) {
+                        if (r.status === 'authorized') {
+                            stopQR();
+                            document.getElementById('qrStatus').textContent = 'Authorized! Redirecting...';
+                            showMsg('Login successful!', 'success');
+                            setTimeout(function() { window.location.href = r.redirect || REDIRECT; }, 500);
+                        } else if (r.status === 'expired') {
+                            stopQR();
+                            document.getElementById('qrStatus').textContent = 'QR expired. Please refresh.';
+                        }
+                    }).catch(function() {});
             }, 3000);
         }
         
-        window.stopQRPolling = function() {
-            if (qrPollInterval) {
-                clearInterval(qrPollInterval);
-                qrPollInterval = null;
-            }
-        };
+        window.stopQR = function() { if (qrInt) { clearInterval(qrInt); qrInt = null; } };
         
-        document.getElementById('btn-refresh-qr')?.addEventListener('click', function() {
-            stopQRPolling();
-            generateQRCode();
-        });
+        document.getElementById('btnRefreshQR').addEventListener('click', function() { stopQR(); genQR(); });
         
-        // Passkey authentication
-        async function startPasskeyAuth() {
-            hideMessage();
-            
-            try {
-                const optionsRes = await apiCall('passkeys/login/options', {});
-                
-                if (!optionsRes.success) {
-                    showMessage(optionsRes.error || 'Failed to start authentication');
-                    return;
-                }
-                
-                const options = optionsRes.options;
-                
-                const publicKeyCredentialRequestOptions = {
-                    challenge: Uint8Array.from(atob(options.challenge.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0)),
-                    timeout: options.timeout,
-                    rpId: options.rpId,
-                    userVerification: options.userVerification
+        // Passkey
+        function startPasskey() {
+            hideMsg();
+            api('passkeys/login/options', {}).then(function(r) {
+                if (!r.success) { showMsg(r.error || 'Failed'); return; }
+                var opts = r.options;
+                var pkOpts = {
+                    challenge: Uint8Array.from(atob(opts.challenge.replace(/-/g, '+').replace(/_/g, '/')), function(c) { return c.charCodeAt(0); }),
+                    timeout: opts.timeout,
+                    rpId: opts.rpId,
+                    userVerification: opts.userVerification
                 };
-                
-                const credential = await navigator.credentials.get({
-                    publicKey: publicKeyCredentialRequestOptions
+                navigator.credentials.get({ publicKey: pkOpts }).then(function(cred) {
+                    var resp = {
+                        id: cred.id,
+                        rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(cred.rawId))),
+                        response: {
+                            clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(cred.response.clientDataJSON))),
+                            authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(cred.response.authenticatorData))),
+                            signature: btoa(String.fromCharCode.apply(null, new Uint8Array(cred.response.signature)))
+                        },
+                        type: cred.type,
+                        session_id: opts.session_id
+                    };
+                    api('passkeys/login/verify', resp).then(function(v) {
+                        if (v.success) {
+                            showMsg('Login successful!', 'success');
+                            setTimeout(function() { window.location.href = v.redirect || REDIRECT; }, 500);
+                        } else {
+                            showMsg(v.error || 'Auth failed');
+                        }
+                    }).catch(function() { showMsg('Network error'); });
+                }).catch(function(e) {
+                    if (e.name === 'NotAllowedError') showMsg('Authentication cancelled');
+                    else showMsg('Passkey failed');
                 });
-                
-                const credentialResponse = {
-                    id: credential.id,
-                    rawId: btoa(String.fromCharCode(...new Uint8Array(credential.rawId))),
-                    response: {
-                        clientDataJSON: btoa(String.fromCharCode(...new Uint8Array(credential.response.clientDataJSON))),
-                        authenticatorData: btoa(String.fromCharCode(...new Uint8Array(credential.response.authenticatorData))),
-                        signature: btoa(String.fromCharCode(...new Uint8Array(credential.response.signature)))
-                    },
-                    type: credential.type,
-                    session_id: options.session_id
-                };
-                
-                const verifyRes = await apiCall('passkeys/login/verify', credentialResponse);
-                
-                if (verifyRes.success) {
-                    showMessage('Login successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = verifyRes.redirect || REDIRECT_TO || '/';
-                    }, 500);
-                } else {
-                    showMessage(verifyRes.error || 'Authentication failed');
-                }
-            } catch (err) {
-                if (err.name === 'NotAllowedError') {
-                    showMessage('Authentication was cancelled');
-                } else {
-                    showMessage('Passkey authentication failed');
-                }
-            }
+            }).catch(function() { showMsg('Network error'); });
         }
         
-        // Biometric button in OTP view
-        document.getElementById('btn-biometric')?.addEventListener('click', startPasskeyAuth);
-        
-        // Forgot password
-        window.showForgotPassword = function() {
-            // For now, show message - can be extended
-            showMessage('Password reset link will be sent to your email.');
-        };
+        document.getElementById('btnBiometric')?.addEventListener('click', startPasskey);
         
     })();
     </script>
-    
-    <?php wp_footer(); ?>
 </body>
 </html>
