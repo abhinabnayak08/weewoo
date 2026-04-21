@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin Settings Class
+ * Admin Settings Class - Premium Edition
  *
  * @package WeeWoo_Auth_Pro
  */
@@ -32,10 +32,11 @@ final class WW_Auth_Settings
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'register_settings']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
+        add_action('admin_notices', [$this, 'admin_notices']);
     }
 
     /**
-     * Add menu item under Settings
+     * Add menu item
      */
     public function add_admin_menu(): void
     {
@@ -48,6 +49,20 @@ final class WW_Auth_Settings
             'dashicons-shield-alt',
             80
         );
+    }
+
+    /**
+     * Admin notices
+     */
+    public function admin_notices(): void
+    {
+        if (isset($_GET['settings-updated']) && $_GET['settings-updated'] && isset($_GET['page']) && $_GET['page'] === $this->page_slug) {
+            ?>
+            <div class="notice notice-success is-dismissible">
+                <p><strong><?php esc_html_e('Settings saved successfully!', 'weewoo-auth-pro'); ?></strong></p>
+            </div>
+            <?php
+        }
     }
 
     /**
@@ -73,31 +88,134 @@ final class WW_Auth_Settings
     public function register_settings(): void
     {
         // General Settings
-        register_setting('ww_auth_general', 'ww_auth_whatsapp_enabled', ['type' => 'boolean', 'default' => false]);
-        register_setting('ww_auth_general', 'ww_auth_email_enabled', ['type' => 'boolean', 'default' => true]);
-        register_setting('ww_auth_general', 'ww_auth_passkeys_enabled', ['type' => 'boolean', 'default' => false]);
-        register_setting('ww_auth_general', 'ww_auth_qr_enabled', ['type' => 'boolean', 'default' => true]);
-        register_setting('ww_auth_general', 'ww_auth_admin_2fa_enabled', ['type' => 'boolean', 'default' => false]);
+        register_setting('ww_auth_general', 'ww_auth_whatsapp_enabled', [
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_email_enabled', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_passkeys_enabled', [
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_qr_enabled', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_admin_2fa_enabled', [
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        
+        // Per-form settings
+        register_setting('ww_auth_general', 'ww_auth_login_whatsapp', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_login_email', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_register_whatsapp', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_general', 'ww_auth_register_email', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
 
         // Meta API Settings
-        register_setting('ww_auth_meta', 'ww_auth_meta_phone_id', ['type' => 'string', 'default' => '']);
-        register_setting('ww_auth_meta', 'ww_auth_meta_access_token', ['type' => 'string', 'default' => '']);
-        register_setting('ww_auth_meta', 'ww_auth_meta_template_name', ['type' => 'string', 'default' => 'authentication_otp']);
-        register_setting('ww_auth_meta', 'ww_auth_meta_template_lang', ['type' => 'string', 'default' => 'en']);
+        register_setting('ww_auth_meta', 'ww_auth_meta_phone_id', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_meta', 'ww_auth_meta_access_token', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_meta', 'ww_auth_meta_template_name', [
+            'type' => 'string',
+            'default' => 'authentication_otp',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_meta', 'ww_auth_meta_template_lang', [
+            'type' => 'string',
+            'default' => 'en',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
 
         // Security Settings
-        register_setting('ww_auth_security', 'ww_auth_turnstile_enabled', ['type' => 'boolean', 'default' => false]);
-        register_setting('ww_auth_security', 'ww_auth_turnstile_site_key', ['type' => 'string', 'default' => '']);
-        register_setting('ww_auth_security', 'ww_auth_turnstile_secret_key', ['type' => 'string', 'default' => '']);
-        register_setting('ww_auth_security', 'ww_auth_rate_limit_attempts', ['type' => 'integer', 'default' => 5]);
-        register_setting('ww_auth_security', 'ww_auth_rate_limit_duration', ['type' => 'integer', 'default' => 60]);
+        register_setting('ww_auth_security', 'ww_auth_turnstile_enabled', [
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
+        register_setting('ww_auth_security', 'ww_auth_turnstile_site_key', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_security', 'ww_auth_turnstile_secret_key', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_security', 'ww_auth_rate_limit_attempts', [
+            'type' => 'integer',
+            'default' => 5,
+            'sanitize_callback' => 'absint',
+        ]);
+        register_setting('ww_auth_security', 'ww_auth_rate_limit_duration', [
+            'type' => 'integer',
+            'default' => 60,
+            'sanitize_callback' => 'absint',
+        ]);
 
         // Branding Settings
-        register_setting('ww_auth_branding', 'ww_auth_logo_url', ['type' => 'string', 'default' => '']);
-        register_setting('ww_auth_branding', 'ww_auth_primary_color', ['type' => 'string', 'default' => '#10B981']);
-        register_setting('ww_auth_branding', 'ww_auth_secondary_color', ['type' => 'string', 'default' => '#111827']);
-        register_setting('ww_auth_branding', 'ww_auth_page_title', ['type' => 'string', 'default' => 'Secure Login']);
-        register_setting('ww_auth_branding', 'ww_auth_welcome_text', ['type' => 'string', 'default' => 'Welcome back']);
+        register_setting('ww_auth_branding', 'ww_auth_logo_url', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'esc_url_raw',
+        ]);
+        register_setting('ww_auth_branding', 'ww_auth_primary_color', [
+            'type' => 'string',
+            'default' => '#10B981',
+            'sanitize_callback' => 'sanitize_hex_color',
+        ]);
+        register_setting('ww_auth_branding', 'ww_auth_secondary_color', [
+            'type' => 'string',
+            'default' => '#111827',
+            'sanitize_callback' => 'sanitize_hex_color',
+        ]);
+        register_setting('ww_auth_branding', 'ww_auth_page_title', [
+            'type' => 'string',
+            'default' => 'Secure Login',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_branding', 'ww_auth_welcome_text', [
+            'type' => 'string',
+            'default' => 'Welcome back',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
+        register_setting('ww_auth_branding', 'ww_auth_company_name', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
     }
 
     /**
@@ -171,21 +289,23 @@ final class WW_Auth_Settings
     {
         ?>
         <form method="post" action="options.php">
-            <?php settings_fields('ww_auth_general'); ?>
+            <?php 
+            settings_fields('ww_auth_general');
+            ?>
             
             <div class="ww-auth-card">
                 <h2><?php esc_html_e('Authentication Methods', 'weewoo-auth-pro'); ?></h2>
-                <p class="ww-auth-card-desc"><?php esc_html_e('Enable or disable authentication methods for your users.', 'weewoo-auth-pro'); ?></p>
+                <p class="ww-auth-card-desc"><?php esc_html_e('Enable or disable authentication methods globally.', 'weewoo-auth-pro'); ?></p>
 
                 <div class="ww-auth-toggle-group">
                     <div class="ww-auth-toggle-row">
                         <div class="ww-auth-toggle-info">
                             <strong><?php esc_html_e('WhatsApp OTP', 'weewoo-auth-pro'); ?></strong>
-                            <span><?php esc_html_e('Send one-time passwords via WhatsApp', 'weewoo-auth-pro'); ?></span>
+                            <span><?php esc_html_e('Send one-time passwords via WhatsApp (requires Meta API setup)', 'weewoo-auth-pro'); ?></span>
                         </div>
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_whatsapp_enabled" value="1" 
-                                   <?php checked(get_option('ww_auth_whatsapp_enabled'), true); ?>>
+                                   <?php checked(get_option('ww_auth_whatsapp_enabled', false)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
@@ -197,7 +317,7 @@ final class WW_Auth_Settings
                         </div>
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_email_enabled" value="1" 
-                                   <?php checked(get_option('ww_auth_email_enabled'), true); ?>>
+                                   <?php checked(get_option('ww_auth_email_enabled', true)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
@@ -209,7 +329,7 @@ final class WW_Auth_Settings
                         </div>
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_passkeys_enabled" value="1" 
-                                   <?php checked(get_option('ww_auth_passkeys_enabled'), true); ?>>
+                                   <?php checked(get_option('ww_auth_passkeys_enabled', false)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
@@ -217,11 +337,11 @@ final class WW_Auth_Settings
                     <div class="ww-auth-toggle-row">
                         <div class="ww-auth-toggle-info">
                             <strong><?php esc_html_e('QR Code Login', 'weewoo-auth-pro'); ?></strong>
-                            <span><?php esc_html_e('Desktop-to-mobile QR handshake login', 'weewoo-auth-pro'); ?></span>
+                            <span><?php esc_html_e('Desktop-to-mobile QR handshake (desktop only)', 'weewoo-auth-pro'); ?></span>
                         </div>
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_qr_enabled" value="1" 
-                                   <?php checked(get_option('ww_auth_qr_enabled'), true); ?>>
+                                   <?php checked(get_option('ww_auth_qr_enabled', true)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
@@ -233,7 +353,7 @@ final class WW_Auth_Settings
                         </div>
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_admin_2fa_enabled" value="1" 
-                                   <?php checked(get_option('ww_auth_admin_2fa_enabled'), true); ?>>
+                                   <?php checked(get_option('ww_auth_admin_2fa_enabled', false)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
@@ -241,10 +361,48 @@ final class WW_Auth_Settings
             </div>
 
             <div class="ww-auth-card">
+                <h2><?php esc_html_e('Per-Form Method Control', 'weewoo-auth-pro'); ?></h2>
+                <p class="ww-auth-card-desc"><?php esc_html_e('Choose which methods are available on Login vs Register forms.', 'weewoo-auth-pro'); ?></p>
+
+                <table class="ww-auth-form-table" style="margin-top: 16px;">
+                    <tr>
+                        <th style="width: 200px;"></th>
+                        <th style="text-align: center; padding: 8px;">Login Form</th>
+                        <th style="text-align: center; padding: 8px;">Register Form</th>
+                    </tr>
+                    <tr>
+                        <td><strong>WhatsApp OTP</strong></td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="ww_auth_login_whatsapp" value="1" 
+                                   <?php checked(get_option('ww_auth_login_whatsapp', true)); ?>>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="ww_auth_register_whatsapp" value="1" 
+                                   <?php checked(get_option('ww_auth_register_whatsapp', true)); ?>>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Email OTP</strong></td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="ww_auth_login_email" value="1" 
+                                   <?php checked(get_option('ww_auth_login_email', true)); ?>>
+                        </td>
+                        <td style="text-align: center;">
+                            <input type="checkbox" name="ww_auth_register_email" value="1" 
+                                   <?php checked(get_option('ww_auth_register_email', true)); ?>>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="ww-auth-card">
                 <h2><?php esc_html_e('Login Page', 'weewoo-auth-pro'); ?></h2>
                 <div class="ww-auth-info-box">
                     <strong><?php esc_html_e('Secure Login URL:', 'weewoo-auth-pro'); ?></strong>
                     <code><?php echo esc_url(home_url('/secure-login/')); ?></code>
+                    <a href="<?php echo esc_url(home_url('/secure-login/')); ?>" target="_blank" style="margin-left: 12px;">
+                        <?php esc_html_e('Preview', 'weewoo-auth-pro'); ?> →
+                    </a>
                 </div>
             </div>
 
@@ -258,6 +416,9 @@ final class WW_Auth_Settings
      */
     private function render_meta_tab(): void
     {
+        $phone_id = get_option('ww_auth_meta_phone_id', '');
+        $access_token = get_option('ww_auth_meta_access_token', '');
+        $is_configured = !empty($phone_id) && !empty($access_token);
         ?>
         <form method="post" action="options.php">
             <?php settings_fields('ww_auth_meta'); ?>
@@ -271,6 +432,16 @@ final class WW_Auth_Settings
                     </a>
                 </p>
 
+                <?php if ($is_configured): ?>
+                <div class="ww-auth-info-box" style="background: #F0FDF4; border-color: #BBF7D0; margin-bottom: 20px;">
+                    <span style="color: #166534;">✓ <?php esc_html_e('Meta API is configured', 'weewoo-auth-pro'); ?></span>
+                </div>
+                <?php else: ?>
+                <div class="ww-auth-info-box" style="background: #FEF3C7; border-color: #FCD34D; margin-bottom: 20px;">
+                    <span style="color: #92400E;">⚠ <?php esc_html_e('Meta API not configured - WhatsApp OTP will not work', 'weewoo-auth-pro'); ?></span>
+                </div>
+                <?php endif; ?>
+
                 <table class="form-table ww-auth-form-table">
                     <tr>
                         <th scope="row">
@@ -280,10 +451,10 @@ final class WW_Auth_Settings
                             <input type="text" 
                                    id="ww_auth_meta_phone_id" 
                                    name="ww_auth_meta_phone_id" 
-                                   value="<?php echo esc_attr(get_option('ww_auth_meta_phone_id')); ?>" 
+                                   value="<?php echo esc_attr($phone_id); ?>" 
                                    class="regular-text"
                                    placeholder="Enter your Phone Number ID">
-                            <p class="description"><?php esc_html_e('Found in your Meta Business Suite under WhatsApp > Phone Numbers.', 'weewoo-auth-pro'); ?></p>
+                            <p class="description"><?php esc_html_e('Found in Meta Business Suite under WhatsApp > Phone Numbers.', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -294,10 +465,10 @@ final class WW_Auth_Settings
                             <input type="password" 
                                    id="ww_auth_meta_access_token" 
                                    name="ww_auth_meta_access_token" 
-                                   value="<?php echo esc_attr(get_option('ww_auth_meta_access_token')); ?>" 
+                                   value="<?php echo esc_attr($access_token); ?>" 
                                    class="regular-text"
                                    placeholder="Enter your Access Token">
-                            <p class="description"><?php esc_html_e('Permanent token from your System User in Meta Business Suite.', 'weewoo-auth-pro'); ?></p>
+                            <p class="description"><?php esc_html_e('Permanent token from System User in Meta Business Suite.', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -311,7 +482,7 @@ final class WW_Auth_Settings
                                    value="<?php echo esc_attr(get_option('ww_auth_meta_template_name', 'authentication_otp')); ?>" 
                                    class="regular-text"
                                    placeholder="authentication_otp">
-                            <p class="description"><?php esc_html_e('Name of your approved Authentication template in WhatsApp Manager.', 'weewoo-auth-pro'); ?></p>
+                            <p class="description"><?php esc_html_e('Name of your approved Authentication template.', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -321,15 +492,10 @@ final class WW_Auth_Settings
                         <td>
                             <select id="ww_auth_meta_template_lang" name="ww_auth_meta_template_lang" class="regular-text">
                                 <?php
-                                $languages = ['en' => 'English', 'es' => 'Spanish', 'pt_BR' => 'Portuguese (BR)', 'hi' => 'Hindi', 'ar' => 'Arabic'];
+                                $languages = ['en' => 'English', 'en_US' => 'English (US)', 'hi' => 'Hindi', 'es' => 'Spanish', 'pt_BR' => 'Portuguese (BR)', 'ar' => 'Arabic'];
                                 $current = get_option('ww_auth_meta_template_lang', 'en');
                                 foreach ($languages as $code => $name) {
-                                    printf(
-                                        '<option value="%s" %s>%s</option>',
-                                        esc_attr($code),
-                                        selected($current, $code, false),
-                                        esc_html($name)
-                                    );
+                                    printf('<option value="%s" %s>%s</option>', esc_attr($code), selected($current, $code, false), esc_html($name));
                                 }
                                 ?>
                             </select>
@@ -368,7 +534,7 @@ final class WW_Auth_Settings
                     </div>
                     <label class="ww-auth-switch">
                         <input type="checkbox" name="ww_auth_turnstile_enabled" value="1" 
-                               <?php checked(get_option('ww_auth_turnstile_enabled'), true); ?>>
+                               <?php checked(get_option('ww_auth_turnstile_enabled', false)); ?>>
                         <span class="ww-auth-slider"></span>
                     </label>
                 </div>
@@ -405,7 +571,7 @@ final class WW_Auth_Settings
 
             <div class="ww-auth-card">
                 <h2><?php esc_html_e('Rate Limiting', 'weewoo-auth-pro'); ?></h2>
-                <p class="ww-auth-card-desc"><?php esc_html_e('Protect against brute force attacks with IP-based rate limiting.', 'weewoo-auth-pro'); ?></p>
+                <p class="ww-auth-card-desc"><?php esc_html_e('Protect against brute force attacks.', 'weewoo-auth-pro'); ?></p>
 
                 <table class="form-table ww-auth-form-table">
                     <tr>
@@ -419,7 +585,7 @@ final class WW_Auth_Settings
                                    value="<?php echo esc_attr(get_option('ww_auth_rate_limit_attempts', 5)); ?>" 
                                    class="small-text"
                                    min="1" max="20">
-                            <p class="description"><?php esc_html_e('Number of failed attempts before blocking (default: 5).', 'weewoo-auth-pro'); ?></p>
+                            <p class="description"><?php esc_html_e('Number of failed attempts before blocking.', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -433,7 +599,6 @@ final class WW_Auth_Settings
                                    value="<?php echo esc_attr(get_option('ww_auth_rate_limit_duration', 60)); ?>" 
                                    class="small-text"
                                    min="1" max="1440">
-                            <p class="description"><?php esc_html_e('How long to block an IP after max failures (default: 60 min).', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                 </table>
@@ -469,7 +634,21 @@ final class WW_Auth_Settings
                                    value="<?php echo esc_attr(get_option('ww_auth_logo_url')); ?>" 
                                    class="large-text"
                                    placeholder="https://yoursite.com/logo.png">
-                            <p class="description"><?php esc_html_e('Full URL to your logo image (recommended: 200x60px).', 'weewoo-auth-pro'); ?></p>
+                            <p class="description"><?php esc_html_e('Full URL to your logo (recommended: 200x60px).', 'weewoo-auth-pro'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="ww_auth_company_name"><?php esc_html_e('Company Name', 'weewoo-auth-pro'); ?></label>
+                        </th>
+                        <td>
+                            <input type="text" 
+                                   id="ww_auth_company_name" 
+                                   name="ww_auth_company_name" 
+                                   value="<?php echo esc_attr(get_option('ww_auth_company_name')); ?>" 
+                                   class="regular-text"
+                                   placeholder="Your Company">
+                            <p class="description"><?php esc_html_e('Shown in email footer and page.', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -482,7 +661,6 @@ final class WW_Auth_Settings
                                    name="ww_auth_primary_color" 
                                    value="<?php echo esc_attr(get_option('ww_auth_primary_color', '#10B981')); ?>">
                             <code><?php echo esc_html(get_option('ww_auth_primary_color', '#10B981')); ?></code>
-                            <p class="description"><?php esc_html_e('Accent color for buttons and highlights (default: Emerald #10B981).', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -495,7 +673,6 @@ final class WW_Auth_Settings
                                    name="ww_auth_secondary_color" 
                                    value="<?php echo esc_attr(get_option('ww_auth_secondary_color', '#111827')); ?>">
                             <code><?php echo esc_html(get_option('ww_auth_secondary_color', '#111827')); ?></code>
-                            <p class="description"><?php esc_html_e('Button and text color (default: Pitch Black #111827).', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -523,28 +700,6 @@ final class WW_Auth_Settings
                         </td>
                     </tr>
                 </table>
-            </div>
-
-            <div class="ww-auth-card">
-                <h2><?php esc_html_e('Preview', 'weewoo-auth-pro'); ?></h2>
-                <div class="ww-auth-preview-box" style="background: #F4F9F5; padding: 40px; border-radius: 16px;">
-                    <div style="background: white; max-width: 400px; margin: 0 auto; padding: 32px; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.06);">
-                        <div style="text-align: center; margin-bottom: 24px;">
-                            <?php if (get_option('ww_auth_logo_url')) : ?>
-                                <img src="<?php echo esc_url(get_option('ww_auth_logo_url')); ?>" alt="Logo" style="max-height: 48px;">
-                            <?php else : ?>
-                                <div style="width: 48px; height: 48px; background: <?php echo esc_attr(get_option('ww_auth_primary_color', '#10B981')); ?>; border-radius: 12px; margin: 0 auto;"></div>
-                            <?php endif; ?>
-                        </div>
-                        <h3 style="text-align: center; color: <?php echo esc_attr(get_option('ww_auth_secondary_color', '#111827')); ?>; margin: 0 0 8px;">
-                            <?php echo esc_html(get_option('ww_auth_welcome_text', 'Welcome back')); ?>
-                        </h3>
-                        <p style="text-align: center; color: #6B7280; margin: 0 0 24px; font-size: 14px;">Sign in to continue</p>
-                        <button type="button" style="width: 100%; padding: 14px 24px; background: <?php echo esc_attr(get_option('ww_auth_secondary_color', '#111827')); ?>; color: white; border: none; border-radius: 100px; font-weight: 600; cursor: pointer;">
-                            Continue
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <?php submit_button(__('Save Branding', 'weewoo-auth-pro'), 'ww-auth-btn-primary'); ?>
