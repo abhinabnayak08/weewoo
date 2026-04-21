@@ -126,6 +126,20 @@ final class WeeWoo_Auth_Pro
 
         // Initialize modules
         add_action('plugins_loaded', [$this, 'init_modules']);
+
+        // Declare WooCommerce HPOS (Custom Order Tables) compatibility
+        add_action('before_woocommerce_init', [$this, 'declare_wc_compatibility']);
+    }
+
+    /**
+     * Declare WooCommerce feature compatibility (HPOS, cart/checkout blocks)
+     */
+    public function declare_wc_compatibility(): void
+    {
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+        }
     }
 
     /**
@@ -177,37 +191,15 @@ final class WeeWoo_Auth_Pro
 
     /**
      * Enqueue frontend assets
+     *
+     * The /secure-login/ template is fully self-contained with inline CSS + JS
+     * for maximum compatibility and performance. External files are intentionally
+     * NOT enqueued on the login page to avoid theme-style conflicts.
      */
     public function enqueue_frontend_assets(): void
     {
-        if (!get_query_var('ww_secure_login')) {
-            return;
-        }
-
-        wp_enqueue_style(
-            'ww-auth-styles',
-            WW_AUTH_PLUGIN_URL . 'assets/css/frontend.css',
-            [],
-            WW_AUTH_VERSION
-        );
-
-        wp_enqueue_script(
-            'ww-auth-scripts',
-            WW_AUTH_PLUGIN_URL . 'assets/js/frontend.js',
-            [],
-            WW_AUTH_VERSION,
-            true
-        );
-
-        // Localize script with REST API data
-        wp_localize_script('ww-auth-scripts', 'wwAuth', [
-            'restUrl' => esc_url_raw(rest_url('ww-auth/v1/')),
-            'nonce' => wp_create_nonce('wp_rest'),
-            'turnstileSiteKey' => get_option('ww_auth_turnstile_site_key', ''),
-            'passkeysEnabled' => get_option('ww_auth_passkeys_enabled', false),
-            'whatsappEnabled' => get_option('ww_auth_whatsapp_enabled', false),
-            'qrEnabled' => get_option('ww_auth_qr_enabled', true),
-        ]);
+        // Intentionally left empty — see templates/login-page.php for styles/scripts.
+        return;
     }
 
     /**

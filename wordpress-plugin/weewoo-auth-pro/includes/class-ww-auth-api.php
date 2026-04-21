@@ -470,10 +470,15 @@ final class WW_Auth_API
 
     /**
      * Handle magic link login
+     *
+     * Accepts either `?token=` or `?ww_magic=` (the email's URL uses ww_magic).
      */
     public function handle_magic_link(WP_REST_Request $request): WP_REST_Response
     {
-        $token = sanitize_text_field($request->get_param('token'));
+        $token = sanitize_text_field($request->get_param('token') ?? '');
+        if (empty($token)) {
+            $token = sanitize_text_field($request->get_param('ww_magic') ?? '');
+        }
         $email = sanitize_email($request->get_param('email'));
 
         if (empty($token) || empty($email)) {

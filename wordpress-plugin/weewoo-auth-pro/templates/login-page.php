@@ -1556,6 +1556,31 @@ $is_mobile = wp_is_mobile();
             showMsg('Login successful! Redirecting...', 'success');
             setTimeout(function() { window.location.href = REDIRECT; }, 500);
         });
+
+        // Magic Link auto-redeem: if ?ww_magic=TOKEN&email=EMAIL is present,
+        // call the REST endpoint immediately and log the user in.
+        (function redeemMagicLink() {
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var magic = params.get('ww_magic');
+                var mEmail = params.get('email');
+                if (!magic || !mEmail) return;
+
+                showMsg('Signing you in securely…', 'success');
+                var url = API + 'magic-link?token=' + encodeURIComponent(magic) + '&email=' + encodeURIComponent(mEmail);
+                fetch(url, { method: 'GET', headers: { 'X-WP-Nonce': NONCE } })
+                    .then(function(r) { return r.json(); })
+                    .then(function(r) {
+                        if (r && r.success) {
+                            showMsg('Signed in! Redirecting…', 'success');
+                            setTimeout(function() { window.location.href = r.redirect || REDIRECT; }, 400);
+                        } else {
+                            showMsg((r && r.error) || 'Magic link expired or invalid.');
+                        }
+                    })
+                    .catch(function() { showMsg('Unable to verify magic link.'); });
+            } catch (e) { /* noop */ }
+        })();
         
     })();
     </script>
