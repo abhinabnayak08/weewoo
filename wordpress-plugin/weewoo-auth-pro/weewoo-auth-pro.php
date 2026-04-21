@@ -3,7 +3,7 @@
  * Plugin Name: WeeWoo Auth Pro
  * Plugin URI: https://weewoo.io/auth-pro
  * Description: Premium mobile-first authentication plugin with WhatsApp OTP, Passkeys, QR Login, and WooCommerce Guest Pay bypass.
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: WeeWoo
  * Author URI: https://weewoo.io
  * License: GPL v2 or later
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin Constants
-define('WW_AUTH_VERSION', '1.2.0');
+define('WW_AUTH_VERSION', '1.3.0');
 define('WW_AUTH_PLUGIN_FILE', __FILE__);
 define('WW_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WW_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -106,6 +106,7 @@ final class WeeWoo_Auth_Pro
         require_once WW_AUTH_PLUGIN_DIR . 'includes/class-ww-passkeys.php';
         require_once WW_AUTH_PLUGIN_DIR . 'includes/class-ww-qr-handshake.php';
         require_once WW_AUTH_PLUGIN_DIR . 'includes/class-ww-guest-pay.php';
+        require_once WW_AUTH_PLUGIN_DIR . 'includes/class-ww-admin-2fa.php';
         require_once WW_AUTH_PLUGIN_DIR . 'includes/class-ww-frontend.php';
 
         // Admin
@@ -128,11 +129,76 @@ final class WeeWoo_Auth_Pro
         add_action('login_init', [$this, 'force_custom_login_page']);
         add_filter('login_url', [$this, 'filter_login_url'], 10, 3);
 
+        // Logout should always return to /secure-login/
+        add_filter('logout_redirect', [$this, 'filter_logout_redirect'], 10, 3);
+        add_action('wp_logout', [$this, 'after_logout']);
+
+        // WooCommerce integration: send "My Account" (when not logged in) to our login page
+        add_action('template_redirect', [$this, 'redirect_wc_account_to_secure_login'], 20);
+        add_filter('woocommerce_login_redirect', [$this, 'filter_wc_login_redirect'], 10, 2);
+        add_filter('woocommerce_registration_redirect', [$this, 'filter_wc_login_redirect'], 10, 2);
+
         // Initialize modules
         add_action('plugins_loaded', [$this, 'init_modules']);
 
         // Declare WooCommerce HPOS (Custom Order Tables) compatibility
         add_action('before_woocommerce_init', [$this, 'declare_wc_compatibility']);
+    }
+
+    /**
+     * Logout redirect → secure-login (with optional returnable redirect_to).
+     */
+    public function filter_logout_redirect(string $redirect_to, string $requested_redirect_to, $user): string
+    {
+        $url = home_url('/secure-login/');
+        if (!empty($requested_redirect_to)) {
+            $url = add_query_arg('redirect_to', urlencode($requested_redirect_to), $url);
+        }
+        return $url;
+    }
+
+    /**
+     * Emergency fallback: if anything else bypasses logout_redirect, catch here.
+     */
+    public function after_logout(): void
+    {
+        if (headers_sent()) return;
+        if (!empty($_REQUEST['redirect_to'])) return; // core will handle via logout_redirect
+    }
+
+    /**
+     * If the user visits a WooCommerce /my-account/ page while not logged in,
+     * redirect them to /secure-login/ so they get our passwordless flow
+     * (Minimog and other themes render WC login form here by default).
+     */
+    public function redirect_wc_account_to_secure_login(): void
+    {
+        if (!(bool) get_option('ww_auth_force_login_page', true)) return;
+        if (!class_exists('WooCommerce')) return;
+        if (is_user_logged_in()) return;
+
+        // Only intercept the main account page (not endpoints like lost-password, pay, etc)
+        if (!function_exists('is_account_page') || !is_account_page()) return;
+
+        // Allow order-pay (guest checkout) and lost-password endpoints to function normally
+        if (is_wc_endpoint_url('order-pay') || is_wc_endpoint_url('lost-password')) return;
+
+        $redirect = home_url('/secure-login/');
+        $current = (isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : 'https') . '://' . ($_SERVER['HTTP_HOST'] ?? '') . ($_SERVER['REQUEST_URI'] ?? '');
+        $redirect = add_query_arg('redirect_to', urlencode($current), $redirect);
+        wp_safe_redirect($redirect);
+        exit;
+    }
+
+    /**
+     * After WC login, honor `redirect_to` (checkout/cart/etc).
+     */
+    public function filter_wc_login_redirect(string $redirect, $user): string
+    {
+        if (!empty($_REQUEST['redirect_to'])) {
+            return esc_url_raw($_REQUEST['redirect_to']);
+        }
+        return $redirect;
     }
 
     /**
@@ -195,6 +261,7 @@ final class WeeWoo_Auth_Pro
         WW_Passkeys::instance();
         WW_QR_Handshake::instance();
         WW_Guest_Pay::instance();
+        WW_Admin_2FA::instance();
         WW_Frontend::instance();
 
         if (is_admin()) {

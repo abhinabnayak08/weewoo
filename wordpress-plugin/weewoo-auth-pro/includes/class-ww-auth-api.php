@@ -110,17 +110,17 @@ final class WW_Auth_API
             'permission_callback' => [$this, 'check_logged_in'],
         ]);
 
-        // Passkeys endpoints
+        // Passkeys endpoints — accept either logged-in cookie OR ww_token from login response
         register_rest_route(self::NAMESPACE, '/passkeys/register/options', [
             'methods' => 'POST',
             'callback' => [$this, 'handle_passkey_register_options'],
-            'permission_callback' => [$this, 'check_logged_in'],
+            'permission_callback' => [$this, 'check_logged_in_or_token'],
         ]);
 
         register_rest_route(self::NAMESPACE, '/passkeys/register/verify', [
             'methods' => 'POST',
             'callback' => [$this, 'handle_passkey_register_verify'],
-            'permission_callback' => [$this, 'check_logged_in'],
+            'permission_callback' => [$this, 'check_logged_in_or_token'],
         ]);
 
         register_rest_route(self::NAMESPACE, '/passkeys/login/options', [
@@ -141,11 +141,53 @@ final class WW_Auth_API
             'callback' => [$this, 'handle_status'],
             'permission_callback' => '__return_true',
         ]);
+
+        // Current-user quick check (used by login page to skip form if already logged in)
+        register_rest_route(self::NAMESPACE, '/me', [
+            'methods' => 'GET',
+            'callback' => [$this, 'handle_me'],
+            'permission_callback' => '__return_true',
+        ]);
     }
 
     public function check_logged_in(): bool
     {
         return is_user_logged_in();
+    }
+
+    /**
+     * Allow either a real cookie-authenticated WP user OR a short-lived
+     * ww_token issued at OTP verify time. Solves host/cookie quirks that
+     * break REST auth immediately after wp_set_auth_cookie.
+     *
+     * When the token is valid we also set the current user so the handler
+     * sees the right identity.
+     */
+    public function check_logged_in_or_token(WP_REST_Request $request): bool
+    {
+        if (is_user_logged_in()) return true;
+
+        $token = $request->get_header('X-WW-Auth-Token') ?: (string) $request->get_param('ww_token');
+        if (empty($token)) return false;
+
+        $user_id = (int) get_transient('ww_auth_token_' . $token);
+        if ($user_id <= 0) return false;
+
+        $u = get_user_by('id', $user_id);
+        if (!$u) return false;
+
+        wp_set_current_user($user_id);
+        return true;
+    }
+
+    /**
+     * Issue a short-lived (15 min) auth token bound to a user_id.
+     */
+    private function issue_auth_token(int $user_id): string
+    {
+        $token = bin2hex(random_bytes(24));
+        set_transient('ww_auth_token_' . $token, $user_id, 15 * MINUTE_IN_SECONDS);
+        return $token;
     }
 
     /**
@@ -240,36 +282,58 @@ final class WW_Auth_API
 
     /**
      * Find a WP user by email-or-phone identifier.
+     *
+     * For phones we match the last 10 digits against billing_phone or ww_auth_phone
+     * using LIKE '%suffix' so numbers stored with country codes still resolve.
      */
     private function find_user_by_identifier(string $identifier, string $type): ?WP_User
     {
+        global $wpdb;
+
         if ($type === 'email') {
-            $user = get_user_by('email', $identifier);
+            $email = sanitize_email($identifier);
+            if (empty($email)) return null;
+
+            $user = get_user_by('email', $email);
             if ($user) return $user;
 
             // Also check billing_email meta
             $q = get_users([
                 'meta_key' => 'billing_email',
-                'meta_value' => $identifier,
+                'meta_value' => $email,
                 'number' => 1,
+                'search_columns' => [],
             ]);
             return !empty($q) ? $q[0] : null;
         }
 
         if ($type === 'phone') {
             $digits = preg_replace('/\D/', '', $identifier);
-            // match on last 10 digits — tolerant to country-code variations
+            if (strlen($digits) < 10) return null;
+
+            // Match against the last 10 digits (tolerates stored format variations).
             $suffix = substr($digits, -10);
+            $like_suffix = '%' . $wpdb->esc_like($suffix);
 
             $q = get_users([
                 'meta_query' => [
                     'relation' => 'OR',
-                    ['key' => 'billing_phone', 'value' => $suffix, 'compare' => 'LIKE'],
-                    ['key' => 'ww_auth_phone', 'value' => $suffix, 'compare' => 'LIKE'],
+                    ['key' => 'billing_phone',  'value' => $like_suffix, 'compare' => 'LIKE'],
+                    ['key' => 'ww_auth_phone', 'value' => $like_suffix, 'compare' => 'LIKE'],
                 ],
                 'number' => 1,
             ]);
-            return !empty($q) ? $q[0] : null;
+            if (!empty($q)) return $q[0];
+
+            // Last-chance: raw SQL scan across usermeta for any phone-like field.
+            $row = $wpdb->get_row($wpdb->prepare(
+                "SELECT user_id FROM {$wpdb->usermeta}
+                 WHERE (meta_key = 'billing_phone' OR meta_key = 'ww_auth_phone' OR meta_key = 'phone')
+                   AND REPLACE(REPLACE(REPLACE(REPLACE(meta_value,' ',''),'-',''),'+',''),'(','') LIKE %s
+                 LIMIT 1",
+                '%' . $wpdb->esc_like($suffix)
+            ));
+            if ($row && !empty($row->user_id)) return get_user_by('id', (int) $row->user_id);
         }
 
         return null;
@@ -623,6 +687,7 @@ final class WW_Auth_API
                 'has_passkey' => $has_passkey,
             ],
             'nonce' => wp_create_nonce('wp_rest'),
+            'ww_token' => $this->issue_auth_token($user->ID),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -687,6 +752,7 @@ final class WW_Auth_API
         return new WP_REST_Response([
             'success' => true,
             'nonce' => wp_create_nonce('wp_rest'),
+            'ww_token' => $this->issue_auth_token($user->ID),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -782,6 +848,7 @@ final class WW_Auth_API
                 'has_passkey' => $has_passkey,
             ],
             'nonce' => wp_create_nonce('wp_rest'),
+            'ww_token' => $this->issue_auth_token($user->ID),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -948,6 +1015,7 @@ final class WW_Auth_API
                 'display_name' => $user->display_name,
             ],
             'nonce' => wp_create_nonce('wp_rest'),
+            'ww_token' => $this->issue_auth_token($user->ID),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -968,6 +1036,27 @@ final class WW_Auth_API
             ],
             'turnstile' => WW_Turnstile::instance()->is_enabled(),
             'rate_limit' => WW_Rate_Limiter::instance()->get_status(),
+        ], 200);
+    }
+
+    /**
+     * Return the currently-logged-in user (or logged_in:false).
+     */
+    public function handle_me(WP_REST_Request $request): WP_REST_Response
+    {
+        if (!is_user_logged_in()) {
+            return new WP_REST_Response(['logged_in' => false], 200);
+        }
+        $u = wp_get_current_user();
+        $has_pk = !empty(get_user_meta($u->ID, 'ww_auth_passkeys', true));
+        return new WP_REST_Response([
+            'logged_in' => true,
+            'user' => [
+                'id' => $u->ID,
+                'display_name' => $u->display_name,
+                'email' => $u->user_email,
+                'has_passkey' => $has_pk,
+            ],
         ], 200);
     }
 

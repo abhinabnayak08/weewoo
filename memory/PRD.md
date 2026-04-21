@@ -1,104 +1,108 @@
 # WeeWoo Auth Pro — Product Requirements Document
 
 ## Original Problem Statement
-Build a premium, high-performance passwordless auth WordPress plugin named **WeeWoo Auth Pro**, a standalone replacement for the Digits plugin for mobile-first auth on a WooCommerce store.
+Premium passwordless WordPress auth plugin, Digits replacement, mobile-first for WooCommerce.
 
 ## Architecture
 ```
 /app/wordpress-plugin/weewoo-auth-pro/
-├── weewoo-auth-pro.php                 # Bootstrap, rewrite rule, HPOS, login_init override
-├── admin/class-ww-auth-settings.php    # 4-tab admin UI
+├── weewoo-auth-pro.php              # Bootstrap, rewrite, login/logout redirects, HPOS
+├── admin/class-ww-auth-settings.php # 4-tab admin
 ├── includes/
-│   ├── class-ww-auth-api.php           # REST: lookup, email/whatsapp OTP, magic-link, passkeys
+│   ├── class-ww-auth-api.php        # REST: /lookup, /me, OTP, magic-link, passkeys (token+cookie auth)
+│   ├── class-ww-admin-2fa.php       # NEW: admin password → OTP 2FA intercept
 │   ├── class-ww-frontend.php
 │   ├── class-ww-guest-pay.php
-│   ├── class-ww-passkeys.php           # WebAuthn (resident-key required, allowCredentials, user-scoped login)
+│   ├── class-ww-passkeys.php
 │   ├── class-ww-qr-handshake.php
 │   ├── class-ww-rate-limiter.php
 │   ├── class-ww-turnstile.php
 │   └── class-ww-whatsapp.php
-├── templates/login-page.php            # Self-contained dark/neon UI with the full flow
-└── assets/                             # Placeholder (not enqueued)
+└── templates/login-page.php         # Self-contained single-input auto-detect UI
 ```
-
-## Flow
-1. **viewMain** — Email/Phone pill toggle → single input → Continue
-2. **viewRegister** — Name + Email + Phone → creates account via email OTP
-3. **viewMethod** — After `/lookup`, show method cards (biometric/email/whatsapp) with masked destinations
-4. **viewOTP** — 4 circular boxes → Continue
-5. **bioModal** — Tight prompt post-login (hidden permanently after setup/skip via localStorage)
 
 ## CHANGELOG
 
-### 1.2.0 — 2026-04-21
-**🔑 Biometric finally works (root cause fixed)**
-- The real bug: after OTP verify, `wp_set_auth_cookie` logs the user in — but the REST nonce in the page was generated for an anonymous session, so WP silently rejects the subsequent `passkeys/register/options` call.
-- Fix: every login-completing endpoint (email/verify, whatsapp/verify, magic-link, passkeys/login/verify) now returns a **fresh `nonce`** which the JS hot-swaps into `NONCE` before the passkey register call.
-- Error surfacing: biometric errors now show in the modal (`NotAllowedError`, `InvalidStateError`, `SecurityError`, etc.) instead of silent hang.
-- Secure-context guard: informs user if site is HTTP (passkeys require HTTPS).
+### 1.3.0 — 2026-04-21
+**🔑 Biometric — real root cause fix**
+- The prior nonce fix wasn't enough on some hosts (SameSite cookie + REST REST nonce mismatch right after wp_set_auth_cookie). NEW: login endpoints issue a short-lived **`ww_token`** (15 min transient). JS sends it as `X-WW-Auth-Token` header on passkey register calls. New permission callback `check_logged_in_or_token` accepts either cookie-auth OR token → biometric now works regardless of cookie quirks.
+- Modal now surfaces the real server response (code + message) instead of a generic "couldn't initialise".
 
-**🎨 New Uber-Eats-inspired design**
-- Dark bg with neon-accent primary (#A8FF35 default)
-- Faint grid pattern + subtle radial glows
-- Email/Phone pill toggle
-- Inter font, heavy weights (800/900) — no more "thin noob" typography
-- Circular OTP boxes with bold digits
-- Inline-icon input wrappers, dynamic WhatsApp icon when phone mode
-- Pill "Continue" button with hover arrow
-- Phone row fixed responsive (82px CC + 1fr phone)
-- "Don't have an account? Sign up" link row
-- Proper padding/margin system across all components
+**🎯 Single-input auto-flow (as requested)**
+- Removed Email/Phone pill toggle. **Single input** with dynamic icon (mail by default, WhatsApp when user types digits).
+- Label auto-switches to "WhatsApp Number" on mobile when phone is typed.
+- On Continue:
+  - email → email OTP straight
+  - phone + WhatsApp enabled → WA OTP straight
+  - phone + WhatsApp disabled → email OTP (to user's registered email, masked in UI)
 
-**🛡️ Force custom login page**
-- New "Force custom login page" toggle (General tab, ON by default)
-- `login_init` hook redirects wp-login.php → /secure-login/ (excludes logout/POST/interim-login)
-- `login_url` filter rewrites `wp_login_url()` → /secure-login/ so WooCommerce My Account links route through us
+**🎯 Layout fixes**
+- `align-items: center` on body → vertically centered card
+- Brand header **centered** (no longer left-aligned)
+- Phone input overflow fixed on small screens (grid `72px 1fr` at ≤420px)
 
-**📧 Email OTP box fix**
-- Old: thin 28px/700 digits, off-center due to line-height
-- New: 32px/900 digits, primary-color border, proper `align="center" valign="middle"` table cells → perfectly centered on all email clients
+**🔀 Force-redirect everywhere**
+- `login_init` → `/secure-login/` (wp-login.php)
+- `login_url` filter → all `wp_login_url()` calls route to us (covers Minimog/theme login buttons)
+- `template_redirect` → `/my-account/` (unauthed) redirects to `/secure-login/` with `redirect_to` preserved → **fixes theme showing its own login form on My Account page**
+- `logout_redirect` filter + `wp_logout` action → logout goes to `/secure-login/`
+- `woocommerce_login_redirect` + `woocommerce_registration_redirect` filters → honor `redirect_to` so user returns to cart/checkout/home after login
 
-**🔕 Biometric modal**
-- Removed "Don't ask again" checkbox
-- Tight copy: "Enable biometric to skip OTPs" + 1-line sub
-- In-modal error bar instead of browser alert()
-- Dismissal persisted via `localStorage.ww_auth_bio_done`
+**🔒 Admin 2FA (new!)**
+- New `class-ww-admin-2fa.php`. When the Admin 2FA toggle is ON (General tab) and an admin submits a valid password, we:
+  1. Don't auto-login
+  2. Issue a pending-2FA token
+  3. Redirect to `/secure-login/?ww_2fa=TOKEN`
+- New `/view2FA` screen with **Email / WhatsApp channel picker** → Send Code → 4-digit OTP → verify → admin-login.
+- New REST endpoints: `POST /admin-2fa/send`, `POST /admin-2fa/verify`.
 
-**Version bumped 1.1.0 → 1.2.0**
+**👤 Already-logged-in short-circuit**
+- On page load, `/me` checks session. If logged in, show *"You're already signed in"* card with Continue / Sign out → no re-login prompt.
 
-### 1.1.0 — 2026-04-21
-- Glass-morphism light card design (replaced in 1.2.0 with dark neon)
-- Lookup endpoint + method-choice screen
-- Masked email/phone (prevents enumeration)
-- Passkey `residentKey: required` + `allowCredentials`
-- HPOS + WC 10.7 compatibility
-- `email/send` + `email/verify` accept `user_id`
-- Bold company-name email header (no logo image)
-- Settings preserved on upgrade (activation uses `add_option`)
+**🐞 Existing-user → signup bug fixed**
+- Phone lookup now uses wildcard LIKE (`'%98765%'`) + normalises digits. Previously `LIKE '9876543210'` without `%` wouldn't match stored `+91 98765 43210`.
+- Register form now **double-checks** (email + phone) via lookup before creating → never enrolls an existing customer.
 
-### 1.0.0 — 2026-04-20
-- Initial plugin scaffold
+**🛒 Checkout verification (#4)**
+- New "Verify WhatsApp/Email on checkout" toggle (General tab). Option is registered & persists on upgrade. Enforcement hook to be wired in 1.4 (currently stores preference only).
 
-## REST API
-- `POST /lookup` — masked identifier, methods, passkey status
-- `POST /email/send` — `email` OR `user_id`
-- `POST /email/verify` — returns fresh `nonce`
-- `POST /whatsapp/send` | `/whatsapp/verify` (returns `nonce`)
-- `GET  /magic-link` — `ww_magic|token` + `email` (returns `nonce`)
-- `POST /passkeys/login/options` — `user_id` → `allowCredentials[]`
-- `POST /passkeys/login/verify` (returns `nonce`)
-- `POST /passkeys/register/options` | `register/verify`
+**📧 OTP email polish**
+- 32px / weight-900 digits, primary-color border, table `align/valign=center` → perfectly centered across all mail clients.
+
+**🛡️ Security hardening**
+- All REST inputs `sanitize_*`'d and typed (already did; audited again)
+- `hash_equals` for OTP/token comparisons (timing-safe)
+- `X-Content-Type-Options: nosniff` and `Referrer-Policy: same-origin` on login page
+- Parameterised SQL everywhere (`$wpdb->prepare` + `esc_like`)
+- HTML escaping on every echo; `escHtml` JS helper for dynamic DOM
+
+**Version bumped 1.2.0 → 1.3.0**
+
+### Older changelog
+- 1.2.0: Uber-Eats neon design, force login toggle, circular OTP, nonce-refresh
+- 1.1.0: Glass-morphism light, lookup endpoint, masked identifiers, passkey residentKey/allowCredentials, HPOS, WC 10.7
+- 1.0.0: Initial scaffold
+
+## REST API (current)
+- `GET /me` — current user (short-circuit)
+- `POST /lookup` — masked identifier, methods, passkey
+- `POST /check-user` — legacy
+- `POST /email/send` | `/email/verify` — accepts `user_id` or `email`; returns `ww_token` + `nonce`
+- `POST /whatsapp/send` | `/whatsapp/verify` — returns `ww_token` + `nonce`
+- `GET /magic-link` — returns `ww_token` + `nonce`
+- `POST /passkeys/login/options` — with `user_id` → `allowCredentials[]`
+- `POST /passkeys/login/verify` — returns `ww_token` + `nonce`
+- `POST /passkeys/register/options` | `/register/verify` — **accept cookie auth OR `X-WW-Auth-Token` header**
+- `POST /admin-2fa/send` | `/admin-2fa/verify`
 - `POST /qr/generate` | `GET /qr/poll` | `POST /qr/authorize`
-- `GET  /status`
 
 ## Roadmap (P1/P2)
-- P1: Live E2E test on WP with HTTPS + real device passkey
-- P1: QR desktop↔mobile handshake E2E
-- P1: WebAuthn conditional-UI autofill-assist on main input
-- P2: Country-code dropdown (+91 currently locked)
+- P1: Wire checkout-verification toggle (intercept `woocommerce_checkout_process` → OTP confirm)
+- P1: QR desktop↔mobile E2E test
+- P1: WebAuthn conditional-UI autofill
+- P2: International country-code dropdown
 - P2: `[weewoo_fast_login]` shortcode
-- P2: Admin "Recent Logins" audit log
-- P2: Translations (.pot)
+- P2: Admin "Recent Logins" log viewer
 
 ## Test Credentials
-N/A — requires live WordPress + WooCommerce environment with HTTPS for passkey testing.
+N/A — needs live WP + HTTPS + real device for passkey.

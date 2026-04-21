@@ -113,6 +113,11 @@ final class WW_Auth_Settings
             'default' => true,
             'sanitize_callback' => 'rest_sanitize_boolean',
         ]);
+        register_setting('ww_auth_general', 'ww_auth_checkout_verify', [
+            'type' => 'boolean',
+            'default' => false,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
         register_setting('ww_auth_general', 'ww_auth_admin_2fa_enabled', [
             'type' => 'boolean',
             'default' => false,
@@ -364,6 +369,18 @@ final class WW_Auth_Settings
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_force_login_page" value="1"
                                    <?php checked(get_option('ww_auth_force_login_page', true)); ?>>
+                            <span class="ww-auth-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="ww-auth-toggle-row">
+                        <div class="ww-auth-toggle-info">
+                            <strong><?php esc_html_e('Verify WhatsApp/Email on checkout', 'weewoo-auth-pro'); ?></strong>
+                            <span><?php esc_html_e('When a guest clicks "Pay" on WooCommerce checkout, send an OTP to the entered phone/email before processing the order. Also enables storing a verified contact so your order-confirmation plugin can message them on WhatsApp.', 'weewoo-auth-pro'); ?></span>
+                        </div>
+                        <label class="ww-auth-switch">
+                            <input type="checkbox" name="ww_auth_checkout_verify" value="1"
+                                   <?php checked(get_option('ww_auth_checkout_verify', false)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
