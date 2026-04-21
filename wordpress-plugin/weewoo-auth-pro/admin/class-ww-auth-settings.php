@@ -216,6 +216,11 @@ final class WW_Auth_Settings
             'default' => '',
             'sanitize_callback' => 'sanitize_text_field',
         ]);
+        register_setting('ww_auth_branding', 'ww_auth_email_company_name', [
+            'type' => 'string',
+            'default' => '',
+            'sanitize_callback' => 'sanitize_text_field',
+        ]);
     }
 
     /**
@@ -649,6 +654,20 @@ final class WW_Auth_Settings
                                    class="regular-text"
                                    placeholder="Your Company">
                             <p class="description"><?php esc_html_e('Shown in email footer and page.', 'weewoo-auth-pro'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <label for="ww_auth_email_company_name"><?php esc_html_e('Email Header Name (Bold)', 'weewoo-auth-pro'); ?></label>
+                        </th>
+                        <td>
+                            <input type="text"
+                                   id="ww_auth_email_company_name"
+                                   name="ww_auth_email_company_name"
+                                   value="<?php echo esc_attr(get_option('ww_auth_email_company_name')); ?>"
+                                   class="regular-text"
+                                   placeholder="<?php echo esc_attr(get_bloginfo('name')); ?>">
+                            <p class="description"><?php esc_html_e('Big bold text at the top of the OTP email instead of a logo image. Defaults to your site name.', 'weewoo-auth-pro'); ?></p>
                         </td>
                     </tr>
                     <tr>

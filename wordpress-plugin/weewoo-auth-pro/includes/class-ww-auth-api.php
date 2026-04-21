@@ -36,10 +36,21 @@ final class WW_Auth_API
      */
     public function register_routes(): void
     {
-        // Check if user exists
+        // Check if user exists (legacy, kept for compat)
         register_rest_route(self::NAMESPACE, '/check-user', [
             'methods' => 'POST',
             'callback' => [$this, 'handle_check_user'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'identifier' => ['required' => true, 'type' => 'string'],
+                'type' => ['required' => true, 'type' => 'string'],
+            ],
+        ]);
+
+        // Lookup: returns masked email/phone, available methods, passkey status
+        register_rest_route(self::NAMESPACE, '/lookup', [
+            'methods' => 'POST',
+            'callback' => [$this, 'handle_lookup'],
             'permission_callback' => '__return_true',
             'args' => [
                 'identifier' => ['required' => true, 'type' => 'string'],
@@ -184,6 +195,133 @@ final class WW_Auth_API
     }
 
     /**
+     * Lookup user by email OR phone, return masked contact info + available methods.
+     *
+     * Matches against:
+     *   - email  -> user_email, billing_email
+     *   - phone  -> billing_phone, ww_auth_phone (digits only, suffix match)
+     *
+     * Never leaks full email/phone — always returns masked values so arbitrary
+     * numbers cannot be used to reveal another customer's contact details.
+     */
+    public function handle_lookup(WP_REST_Request $request): WP_REST_Response
+    {
+        $identifier = sanitize_text_field($request->get_param('identifier'));
+        $type = sanitize_text_field($request->get_param('type'));
+
+        $user = $this->find_user_by_identifier($identifier, $type);
+
+        if (!$user) {
+            return new WP_REST_Response(['exists' => false], 200);
+        }
+
+        $passkeys = get_user_meta($user->ID, 'ww_auth_passkeys', true);
+        $has_passkey = is_array($passkeys) && !empty($passkeys);
+
+        $email = $user->user_email ?: get_user_meta($user->ID, 'billing_email', true);
+        $phone = get_user_meta($user->ID, 'billing_phone', true)
+               ?: get_user_meta($user->ID, 'ww_auth_phone', true);
+
+        $email_enabled = (bool) get_option('ww_auth_email_enabled', true);
+        $whatsapp_enabled = (bool) get_option('ww_auth_whatsapp_enabled', false)
+                         && WW_WhatsApp::instance()->is_enabled();
+
+        return new WP_REST_Response([
+            'exists' => true,
+            'user_id' => $user->ID,
+            'display_name' => $user->display_name,
+            'has_passkey' => $has_passkey,
+            'masked_email' => $email ? $this->mask_email($email) : '',
+            'masked_phone' => $phone ? $this->mask_phone($phone) : '',
+            'can_email' => $email_enabled && !empty($email),
+            'can_whatsapp' => $whatsapp_enabled && !empty($phone),
+        ], 200);
+    }
+
+    /**
+     * Find a WP user by email-or-phone identifier.
+     */
+    private function find_user_by_identifier(string $identifier, string $type): ?WP_User
+    {
+        if ($type === 'email') {
+            $user = get_user_by('email', $identifier);
+            if ($user) return $user;
+
+            // Also check billing_email meta
+            $q = get_users([
+                'meta_key' => 'billing_email',
+                'meta_value' => $identifier,
+                'number' => 1,
+            ]);
+            return !empty($q) ? $q[0] : null;
+        }
+
+        if ($type === 'phone') {
+            $digits = preg_replace('/\D/', '', $identifier);
+            // match on last 10 digits — tolerant to country-code variations
+            $suffix = substr($digits, -10);
+
+            $q = get_users([
+                'meta_query' => [
+                    'relation' => 'OR',
+                    ['key' => 'billing_phone', 'value' => $suffix, 'compare' => 'LIKE'],
+                    ['key' => 'ww_auth_phone', 'value' => $suffix, 'compare' => 'LIKE'],
+                ],
+                'number' => 1,
+            ]);
+            return !empty($q) ? $q[0] : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Mask email: "tryhardweew@gmail.com" -> "try*****weew@gmail.com"
+     * Keeps first 3 chars, reveals last 4 chars before @, hides middle.
+     */
+    private function mask_email(string $email): string
+    {
+        $parts = explode('@', $email);
+        if (count($parts) !== 2) return $email;
+
+        [$local, $domain] = $parts;
+        $len = strlen($local);
+
+        if ($len <= 4) {
+            $masked_local = substr($local, 0, 1) . str_repeat('*', max(1, $len - 1));
+        } elseif ($len <= 7) {
+            $masked_local = substr($local, 0, 2) . str_repeat('*', 3) . substr($local, -2);
+        } else {
+            $masked_local = substr($local, 0, 3) . str_repeat('*', 5) . substr($local, -4);
+        }
+
+        return $masked_local . '@' . $domain;
+    }
+
+    /**
+     * Mask phone: "+919876543210" -> "+91 98***43210"
+     */
+    private function mask_phone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+        $len = strlen($digits);
+        if ($len < 6) return str_repeat('*', $len);
+
+        $prefix = substr($digits, 0, 2);
+        $suffix = substr($digits, -4);
+        $middle = str_repeat('*', max(3, $len - 6));
+
+        // Try to prepend country code if the number starts with one
+        if ($len >= 12) {
+            // e.g. 919876543210 -> +91 98***43210
+            $cc = substr($digits, 0, 2);
+            return '+' . $cc . ' ' . substr($digits, 2, 2) . $middle . $suffix;
+        }
+
+        return $prefix . $middle . $suffix;
+    }
+
+    /**
      * Handle Email OTP send with premium HTML email
      */
     public function handle_email_send(WP_REST_Request $request): WP_REST_Response
@@ -200,6 +338,16 @@ final class WW_Auth_API
         $email = sanitize_email($request->get_param('email'));
         $name = sanitize_text_field($request->get_param('name') ?? '');
         $phone = sanitize_text_field($request->get_param('phone') ?? '');
+        $user_id = (int) $request->get_param('user_id');
+
+        // If a user_id is provided (from lookup flow), use the canonical email
+        // from the DB — never trust a client-provided email for an existing user.
+        if ($user_id > 0) {
+            $u = get_user_by('id', $user_id);
+            if ($u) {
+                $email = $u->user_email;
+            }
+        }
 
         if (!is_email($email)) {
             return new WP_REST_Response([
@@ -233,12 +381,12 @@ final class WW_Auth_API
 
         // Send premium HTML email
         $site_name = get_bloginfo('name');
-        $logo_url = get_option('ww_auth_logo_url', '');
+        $company_name = get_option('ww_auth_email_company_name', '') ?: $site_name;
         $primary_color = get_option('ww_auth_primary_color', '#10B981');
         
         $subject = "Your verification code: {$otp}";
         
-        $html_message = $this->get_email_template($otp, $magic_link, $site_name, $logo_url, $primary_color);
+        $html_message = $this->get_email_template($otp, $magic_link, $site_name, $company_name, $primary_color);
 
         $headers = [
             'Content-Type: text/html; charset=UTF-8',
@@ -262,9 +410,9 @@ final class WW_Auth_API
     }
 
     /**
-     * Premium HTML Email Template
+     * Premium HTML Email Template (bold company-name header, no logo image).
      */
-    private function get_email_template(string $otp, string $magic_link, string $site_name, string $logo_url, string $primary_color): string
+    private function get_email_template(string $otp, string $magic_link, string $site_name, string $company_name, string $primary_color): string
     {
         $otp_digits = str_split($otp);
         
@@ -282,9 +430,11 @@ final class WW_Auth_API
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 480px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
                     <!-- Header -->
                     <tr>
-                        <td style="padding: 40px 40px 24px; text-align: center; background: linear-gradient(135deg, ' . esc_attr($primary_color) . ' 0%, #059669 100%); border-radius: 16px 16px 0 0;">
-                            ' . ($logo_url ? '<img src="' . esc_url($logo_url) . '" alt="' . esc_attr($site_name) . '" style="max-height: 48px; width: auto;">' : '<div style="width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>') . '
-                            <h1 style="margin: 16px 0 0; color: #ffffff; font-size: 24px; font-weight: 600;">Verification Code</h1>
+                        <td style="padding: 44px 40px 28px; text-align: center; background: linear-gradient(135deg, ' . esc_attr($primary_color) . ' 0%, #059669 100%); border-radius: 16px 16px 0 0;">
+                            <div style="color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">
+                                ' . esc_html($company_name) . '
+                            </div>
+                            <h1 style="margin: 14px 0 0; color: rgba(255,255,255,0.95); font-size: 18px; font-weight: 500;">Verification Code</h1>
                         </td>
                     </tr>
                     
@@ -350,7 +500,7 @@ final class WW_Auth_API
                                 Didn\'t request this? You can safely ignore this email.
                             </p>
                             <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                                © ' . date('Y') . ' ' . esc_html($site_name) . '. All rights reserved.
+                                © ' . date('Y') . ' <strong>' . esc_html($company_name) . '</strong>. All rights reserved.
                             </p>
                         </td>
                     </tr>
@@ -378,6 +528,14 @@ final class WW_Auth_API
 
         $email = sanitize_email($request->get_param('email'));
         $otp = sanitize_text_field($request->get_param('otp'));
+        $user_id = (int) $request->get_param('user_id');
+
+        // If client can't provide a real email (e.g. user came in via phone lookup
+        // and we sent OTP to their account email), resolve it server-side.
+        if (!is_email($email) && $user_id > 0) {
+            $u = get_user_by('id', $user_id);
+            if ($u) $email = $u->user_email;
+        }
 
         $key = 'ww_email_otp_' . md5($email);
         $data = get_transient($key);
@@ -749,8 +907,9 @@ final class WW_Auth_API
      */
     public function handle_passkey_login_options(WP_REST_Request $request): WP_REST_Response
     {
+        $user_id = (int) $request->get_param('user_id');
         $passkeys = WW_Passkeys::instance();
-        $options = $passkeys->get_authentication_options();
+        $options = $passkeys->get_authentication_options($user_id > 0 ? $user_id : null);
 
         return new WP_REST_Response([
             'success' => true,

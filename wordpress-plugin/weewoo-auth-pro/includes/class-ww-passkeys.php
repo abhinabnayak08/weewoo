@@ -190,8 +190,11 @@ final class WW_Passkeys
             'timeout' => 60000,
             'excludeCredentials' => $exclude_credentials,
             'authenticatorSelection' => [
-                'authenticatorAttachment' => 'platform',
-                'residentKey' => 'preferred',
+                // Accept both platform (Touch ID / Face ID / Windows Hello) AND
+                // cross-platform (security keys, phone-as-key) authenticators.
+                // Omitting authenticatorAttachment gives widest compatibility.
+                'residentKey' => 'required',
+                'requireResidentKey' => true,
                 'userVerification' => 'required',
             ],
             'attestation' => 'none',
@@ -277,8 +280,12 @@ final class WW_Passkeys
 
     /**
      * Get authentication options for WebAuthn login
+     *
+     * @param int|null $user_id If provided, returns allowCredentials for that user
+     *                          (enables biometric login even when resident/discoverable
+     *                          credentials are not available — fixes "no credentials found").
      */
-    public function get_authentication_options(): array
+    public function get_authentication_options(?int $user_id = null): array
     {
         $challenge = $this->generate_challenge();
 
@@ -286,13 +293,32 @@ final class WW_Passkeys
         $session_id = bin2hex(random_bytes(16));
         $this->store_challenge('auth_' . $session_id, $challenge);
 
-        return [
+        $options = [
             'challenge' => $this->base64url_encode(hex2bin($challenge)),
             'timeout' => 60000,
             'rpId' => $this->get_rp_id(),
             'userVerification' => 'required',
             'session_id' => $session_id,
         ];
+
+        // When a specific user is targeted (post-identifier step), pass their
+        // credential IDs as allowCredentials so the authenticator can surface them.
+        if ($user_id !== null) {
+            $passkeys = $this->get_user_passkeys($user_id);
+            $allow = [];
+            foreach ($passkeys as $cred_id => $pk) {
+                $allow[] = [
+                    'type' => 'public-key',
+                    'id' => $cred_id,
+                    'transports' => $pk['transports'] ?? ['internal', 'hybrid'],
+                ];
+            }
+            if (!empty($allow)) {
+                $options['allowCredentials'] = $allow;
+            }
+        }
+
+        return $options;
     }
 
     /**

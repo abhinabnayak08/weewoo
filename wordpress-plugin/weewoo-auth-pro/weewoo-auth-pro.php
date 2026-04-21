@@ -3,7 +3,7 @@
  * Plugin Name: WeeWoo Auth Pro
  * Plugin URI: https://weewoo.io/auth-pro
  * Description: Premium mobile-first authentication plugin with WhatsApp OTP, Passkeys, QR Login, and WooCommerce Guest Pay bypass.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: WeeWoo
  * Author URI: https://weewoo.io
  * License: GPL v2 or later
@@ -13,7 +13,7 @@
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * WC requires at least: 7.0
- * WC tested up to: 8.5
+ * WC tested up to: 10.7
  *
  * @package WeeWoo_Auth_Pro
  */
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin Constants
-define('WW_AUTH_VERSION', '1.0.0');
+define('WW_AUTH_VERSION', '1.1.0');
 define('WW_AUTH_PLUGIN_FILE', __FILE__);
 define('WW_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WW_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -229,6 +229,10 @@ final class WeeWoo_Auth_Pro
 
 /**
  * Activation Hook
+ *
+ * IMPORTANT: This uses add_option() which only creates the option if it does
+ * not already exist. Existing user settings are PRESERVED across plugin
+ * upgrades — we never overwrite the merchant's configuration on re-activate.
  */
 function ww_auth_activate(): void
 {
