@@ -449,16 +449,16 @@ final class WW_Auth_API
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto 24px;">
                                 <tr>
                                     <td style="padding: 0 6px;">
-                                        <div style="width: 52px; height: 60px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 28px; font-weight: 700; color: #111827; line-height: 56px; text-align: center;">' . $otp_digits[0] . '</div>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="56" height="64" align="center" valign="middle" style="background: #ffffff; border: 2px solid ' . esc_attr($primary_color) . '; border-radius: 14px; font-size: 32px; font-weight: 900; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; line-height: 60px; text-align:center;">' . $otp_digits[0] . '</td></tr></table>
                                     </td>
                                     <td style="padding: 0 6px;">
-                                        <div style="width: 52px; height: 60px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 28px; font-weight: 700; color: #111827; line-height: 56px; text-align: center;">' . $otp_digits[1] . '</div>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="56" height="64" align="center" valign="middle" style="background: #ffffff; border: 2px solid ' . esc_attr($primary_color) . '; border-radius: 14px; font-size: 32px; font-weight: 900; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; line-height: 60px; text-align:center;">' . $otp_digits[1] . '</td></tr></table>
                                     </td>
                                     <td style="padding: 0 6px;">
-                                        <div style="width: 52px; height: 60px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 28px; font-weight: 700; color: #111827; line-height: 56px; text-align: center;">' . $otp_digits[2] . '</div>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="56" height="64" align="center" valign="middle" style="background: #ffffff; border: 2px solid ' . esc_attr($primary_color) . '; border-radius: 14px; font-size: 32px; font-weight: 900; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; line-height: 60px; text-align:center;">' . $otp_digits[2] . '</td></tr></table>
                                     </td>
                                     <td style="padding: 0 6px;">
-                                        <div style="width: 52px; height: 60px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 28px; font-weight: 700; color: #111827; line-height: 56px; text-align: center;">' . $otp_digits[3] . '</div>
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td width="56" height="64" align="center" valign="middle" style="background: #ffffff; border: 2px solid ' . esc_attr($primary_color) . '; border-radius: 14px; font-size: 32px; font-weight: 900; color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', sans-serif; line-height: 60px; text-align:center;">' . $otp_digits[3] . '</td></tr></table>
                                     </td>
                                 </tr>
                             </table>
@@ -622,6 +622,7 @@ final class WW_Auth_API
                 'display_name' => $user->display_name,
                 'has_passkey' => $has_passkey,
             ],
+            'nonce' => wp_create_nonce('wp_rest'),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -685,6 +686,7 @@ final class WW_Auth_API
 
         return new WP_REST_Response([
             'success' => true,
+            'nonce' => wp_create_nonce('wp_rest'),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -779,6 +781,7 @@ final class WW_Auth_API
                 'display_name' => $user->display_name,
                 'has_passkey' => $has_passkey,
             ],
+            'nonce' => wp_create_nonce('wp_rest'),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }
@@ -944,6 +947,7 @@ final class WW_Auth_API
                 'id' => $user->ID,
                 'display_name' => $user->display_name,
             ],
+            'nonce' => wp_create_nonce('wp_rest'),
             'redirect' => $this->get_redirect_url($user),
         ], 200);
     }

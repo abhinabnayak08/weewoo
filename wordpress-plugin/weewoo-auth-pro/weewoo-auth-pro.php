@@ -3,7 +3,7 @@
  * Plugin Name: WeeWoo Auth Pro
  * Plugin URI: https://weewoo.io/auth-pro
  * Description: Premium mobile-first authentication plugin with WhatsApp OTP, Passkeys, QR Login, and WooCommerce Guest Pay bypass.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: WeeWoo
  * Author URI: https://weewoo.io
  * License: GPL v2 or later
@@ -25,7 +25,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Plugin Constants
-define('WW_AUTH_VERSION', '1.1.0');
+define('WW_AUTH_VERSION', '1.2.0');
 define('WW_AUTH_PLUGIN_FILE', __FILE__);
 define('WW_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WW_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
@@ -124,11 +124,52 @@ final class WeeWoo_Auth_Pro
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
         add_action('rest_api_init', [$this, 'register_rest_routes']);
 
+        // Force wp-login.php and wp-admin (unauthed) to our custom page
+        add_action('login_init', [$this, 'force_custom_login_page']);
+        add_filter('login_url', [$this, 'filter_login_url'], 10, 3);
+
         // Initialize modules
         add_action('plugins_loaded', [$this, 'init_modules']);
 
         // Declare WooCommerce HPOS (Custom Order Tables) compatibility
         add_action('before_woocommerce_init', [$this, 'declare_wc_compatibility']);
+    }
+
+    /**
+     * When enabled, intercept wp-login.php and route visitors to /secure-login/.
+     *
+     * Excludes: logout action, POST requests (so legitimate WP auth POSTs still
+     * function if user disables the feature temporarily), and ?interim-login=1.
+     */
+    public function force_custom_login_page(): void
+    {
+        if (!(bool) get_option('ww_auth_force_login_page', true)) return;
+
+        // Allow logout + POST submissions + password-protected-post cookie flow
+        $action = isset($_REQUEST['action']) ? (string) $_REQUEST['action'] : '';
+        if (in_array($action, ['logout', 'postpass', 'rp', 'resetpass', 'register'], true)) return;
+        if (!empty($_POST)) return;
+        if (isset($_GET['interim-login'])) return;
+
+        $redirect_to = isset($_REQUEST['redirect_to']) ? esc_url_raw($_REQUEST['redirect_to']) : '';
+        $url = home_url('/secure-login/');
+        if ($redirect_to) $url = add_query_arg('redirect_to', urlencode($redirect_to), $url);
+
+        wp_safe_redirect($url);
+        exit;
+    }
+
+    /**
+     * Replace the global login_url with our /secure-login/ so plugins/themes that
+     * call wp_login_url() (e.g. WooCommerce "My Account") link to us.
+     */
+    public function filter_login_url(string $login_url, string $redirect, bool $force_reauth): string
+    {
+        if (!(bool) get_option('ww_auth_force_login_page', true)) return $login_url;
+
+        $url = home_url('/secure-login/');
+        if ($redirect) $url = add_query_arg('redirect_to', urlencode($redirect), $url);
+        return $url;
     }
 
     /**

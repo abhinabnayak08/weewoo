@@ -108,6 +108,11 @@ final class WW_Auth_Settings
             'default' => true,
             'sanitize_callback' => 'rest_sanitize_boolean',
         ]);
+        register_setting('ww_auth_general', 'ww_auth_force_login_page', [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]);
         register_setting('ww_auth_general', 'ww_auth_admin_2fa_enabled', [
             'type' => 'boolean',
             'default' => false,
@@ -347,6 +352,18 @@ final class WW_Auth_Settings
                         <label class="ww-auth-switch">
                             <input type="checkbox" name="ww_auth_qr_enabled" value="1" 
                                    <?php checked(get_option('ww_auth_qr_enabled', true)); ?>>
+                            <span class="ww-auth-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="ww-auth-toggle-row">
+                        <div class="ww-auth-toggle-info">
+                            <strong><?php esc_html_e('Force custom login page', 'weewoo-auth-pro'); ?></strong>
+                            <span><?php esc_html_e('Redirect all wp-login.php and wp_login_url() visits to /secure-login/. Highly recommended.', 'weewoo-auth-pro'); ?></span>
+                        </div>
+                        <label class="ww-auth-switch">
+                            <input type="checkbox" name="ww_auth_force_login_page" value="1"
+                                   <?php checked(get_option('ww_auth_force_login_page', true)); ?>>
                             <span class="ww-auth-slider"></span>
                         </label>
                     </div>
