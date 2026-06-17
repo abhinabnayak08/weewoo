@@ -8,198 +8,213 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{
+<style>:root{--lime:#bee63c;}
+/* WeeWoo Pay (IMB) — premium responsive UPI checkout (matches weewoo.in). */
+.ww-imb-body{
   --lime:#bee63c; --lime-2:#a9d62f; --lime-soft:rgba(190,230,60,.14);
-  --dark:#0f1620; --dark-2:#162030;
-  --ink:#0f172a; --ink-soft:#475569; --ink-muted:#94a3b8;
+  --dark:#0f1620; --ink:#0f172a; --ink-soft:#475569; --ink-muted:#94a3b8;
   --line:#e8ebef; --track:#eef0f2; --danger:#ef4444;
+  margin:0;min-height:100vh;min-height:100svh;color:var(--ink);
+  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  background:
+    radial-gradient(900px 520px at 12% -5%,rgba(190,230,60,.12),transparent 55%),
+    radial-gradient(820px 520px at 100% 105%,rgba(15,22,32,.07),transparent 55%),
+    linear-gradient(180deg,#eef1f5,#e1e6ee);
+  display:flex;align-items:center;justify-content:center;padding:clamp(16px,4vw,44px);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;color:var(--ink);min-height:100vh;
-  background:radial-gradient(900px 500px at 15% 0%,rgba(190,230,60,.10),transparent 55%),radial-gradient(800px 500px at 100% 100%,rgba(15,22,32,.06),transparent 55%),linear-gradient(180deg,#eef1f5,#e2e7ee);
-  display:flex;align-items:center;justify-content:center;padding:40px 20px}
-.sheet{width:100%;max-width:430px;margin:0 auto;background:#fff;position:relative;border-radius:26px;overflow:hidden;box-shadow:0 40px 90px -30px rgba(15,23,42,.45),0 0 0 1px rgba(15,23,42,.04)}
+.ww-imb-body *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
-/* dark header */
-.head{position:relative;background:radial-gradient(420px 200px at 100% -20%,rgba(190,230,60,.18),transparent 60%),linear-gradient(180deg,#11192a,var(--dark));
-  color:#fff;padding:18px 20px 20px;overflow:hidden}
-.head .verify-pill{position:absolute;top:16px;right:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
-  color:var(--lime);background:var(--lime-soft);border:1px solid rgba(190,230,60,.35);padding:6px 12px;border-radius:999px}
-.head .amt{font-size:34px;font-weight:800;letter-spacing:-1.2px;line-height:1.05;margin-top:30px}
-.head .amt .rs{color:var(--lime);margin-right:2px}
-.head .ord{position:absolute;right:22px;bottom:26px;font-size:13px;font-weight:600;color:#94a3b8}
+.ww-sheet{width:100%;max-width:430px;margin:0 auto;background:#fff;position:relative;
+  border-radius:clamp(20px,3vw,28px);overflow:hidden;
+  box-shadow:0 40px 100px -34px rgba(15,23,42,.5),0 2px 6px rgba(15,23,42,.04),0 0 0 1px rgba(15,23,42,.04);
+  animation:ww-rise .6s cubic-bezier(.16,1,.3,1) both}
+@keyframes ww-rise{from{opacity:0;transform:translateY(22px) scale(.985)}to{opacity:1;transform:none}}
 
-/* body */
-.body{padding:16px 16px 24px}
-.tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:#f1f3f5;border-radius:14px;padding:6px;margin-bottom:20px}
-.tab{position:relative;z-index:2;border:0;background:transparent;font:inherit;font-weight:700;font-size:14.5px;color:var(--ink-soft);padding:12px;border-radius:10px;cursor:pointer;transition:color .25s}
-.tab.active{color:#fff}
-.tab-ind{position:absolute;z-index:1;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);background:var(--dark);border-radius:10px;transition:transform .3s cubic-bezier(.16,1,.3,1);box-shadow:0 6px 16px -6px rgba(15,22,32,.5)}
-.tabs[data-active="how"] .tab-ind{transform:translateX(100%)}
+/* ---- dark header ---- */
+.ww-head{position:relative;color:#fff;overflow:hidden;
+  padding:clamp(16px,4.5vw,22px) clamp(16px,5vw,24px) clamp(18px,5vw,22px);
+  background:radial-gradient(460px 220px at 100% -30%,rgba(190,230,60,.22),transparent 60%),linear-gradient(160deg,#13203a 0%,#11192a 45%,var(--dark) 100%)}
+.ww-head::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.05) 50%,transparent 60%)}
+.ww-head .ww-vpill{position:absolute;top:clamp(12px,3.5vw,15px);right:clamp(14px,4vw,18px);
+  display:inline-flex;align-items:center;gap:6px;font-size:clamp(10px,2.6vw,12px);font-weight:700;
+  color:var(--lime);background:var(--lime-soft);border:1px solid rgba(190,230,60,.4);padding:5px 11px;border-radius:999px;
+  box-shadow:0 0 24px -6px rgba(190,230,60,.5)}
+.ww-head .ww-amt{font-size:clamp(30px,9vw,40px);font-weight:800;letter-spacing:-1.4px;line-height:1.04;
+  margin-top:clamp(26px,9vw,34px);font-variant-numeric:tabular-nums}
+.ww-head .ww-amt .rs{color:var(--lime);margin-right:3px;text-shadow:0 0 22px rgba(190,230,60,.45)}
+.ww-head .ww-ord{position:absolute;right:clamp(16px,5vw,24px);bottom:clamp(18px,5vw,22px);
+  font-size:clamp(11px,3vw,13px);font-weight:600;color:#9aa6b6}
 
-.pane{display:none;animation:fade .3s ease}.pane.active{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+/* ---- body ---- */
+.ww-bodyx{padding:clamp(14px,4vw,18px) clamp(14px,4.5vw,18px) clamp(20px,5vw,26px)}
 
-.qr-card{position:relative;width:max-content;max-width:100%;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:20px;padding:14px;box-shadow:0 10px 30px -16px rgba(15,23,42,.25)}
-.qr-card img{display:block;width:196px;height:196px;max-width:62vw;height:auto;border-radius:6px}
-.qr-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--dark);border-radius:999px;
-  padding:7px 14px;font-size:15px;font-weight:800;letter-spacing:-.3px;box-shadow:0 4px 14px rgba(0,0,0,.3);border:3px solid #fff}
-.qr-logo .w{color:#fff}.qr-logo .o{color:var(--lime)}
+.ww-tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:#f1f3f5;border-radius:14px;padding:5px;margin-bottom:clamp(14px,4vw,18px)}
+.ww-tab{position:relative;z-index:2;border:0;background:transparent;font:inherit;font-weight:700;font-size:clamp(13px,3.6vw,14.5px);color:var(--ink-soft);padding:11px;border-radius:10px;cursor:pointer;transition:color .25s}
+.ww-tab.active{color:#fff}
+.ww-tab-ind{position:absolute;z-index:1;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);background:var(--dark);border-radius:10px;transition:transform .32s cubic-bezier(.16,1,.3,1);box-shadow:0 6px 16px -6px rgba(15,22,32,.55)}
+.ww-tabs[data-active="how"] .ww-tab-ind{transform:translateX(100%)}
 
-.hint{text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.6;margin:18px 6px 16px}
+.ww-pane{display:none;animation:ww-fade .32s ease}.ww-pane.active{display:block}
+@keyframes ww-fade{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 
-.dl{display:flex;align-items:center;justify-content:center;gap:7px;width:fit-content;margin:0 auto;background:#fff;color:var(--ink);
-  border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
-.dl svg{width:15px;height:15px}
-.dl:hover{border-color:#cbd5e1;background:#f8fafc;transform:translateY(-1px)}
-.btn-lime{background:linear-gradient(180deg,#c8f04a,var(--lime));color:#0e1a05;min-height:60px;font-size:16.5px;letter-spacing:-.2px;
-  box-shadow:0 12px 30px -10px rgba(190,230,60,.7),inset 0 1px 0 rgba(255,255,255,.5)}
-.btn-lime:hover{transform:translateY(-1px);filter:brightness(1.03);box-shadow:0 16px 36px -10px rgba(190,230,60,.85)}
+/* ---- QR card ---- */
+.ww-qr-card{position:relative;width:max-content;max-width:100%;margin:0 auto;background:#fff;
+  border:1px solid var(--line);border-radius:20px;padding:clamp(12px,3.5vw,16px);
+  box-shadow:0 14px 34px -18px rgba(15,23,42,.3),inset 0 1px 0 rgba(255,255,255,.7)}
+/* premium lime gradient hairline */
+.ww-qr-card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;
+  background:linear-gradient(135deg,rgba(190,230,60,.7),rgba(190,230,60,0) 38%,rgba(190,230,60,0) 62%,rgba(190,230,60,.5));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.ww-qr-card #ww-qr{width:clamp(168px,54vw,200px);height:clamp(168px,54vw,200px);display:grid;place-items:center}
+.ww-qr-card #ww-qr img,.ww-qr-card #ww-qr canvas{display:block;width:100%;height:100%;border-radius:6px}
+.ww-qr-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--dark);border-radius:999px;
+  padding:6px 13px;font-size:clamp(12px,3.4vw,14px);font-weight:800;letter-spacing:-.3px;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);border:3px solid #fff;white-space:nowrap;max-width:78%;overflow:hidden;text-overflow:ellipsis}
+.ww-qr-logo .w{color:#fff}.ww-qr-logo .o{color:var(--lime)}
 
-.valid{display:flex;align-items:center;gap:12px;margin:18px 2px 16px}
-.valid .lbl{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
-.valid .track{flex:1;height:8px;background:var(--track);border-radius:999px;overflow:hidden}
-.valid .fill{height:100%;width:78%;background:linear-gradient(90deg,var(--lime),var(--lime-2));border-radius:999px;transition:width 1s linear}
-.valid .time{font-size:13px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.ww-hint{text-align:center;color:var(--ink-soft);font-size:clamp(12.5px,3.4vw,13.5px);line-height:1.55;margin:clamp(12px,3.5vw,16px) 6px 12px}
 
-.verify-hint{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;
-  border:1px solid rgba(190,230,60,.5);background:rgba(190,230,60,.07);border-radius:999px;padding:13px 16px;
-  font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:14px}
+/* ---- compact download (secondary) ---- */
+.ww-dl{display:flex;align-items:center;justify-content:center;gap:7px;width:fit-content;margin:0 auto;
+  background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:999px;
+  padding:9px 16px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
+.ww-dl svg{width:15px;height:15px}
+.ww-dl:hover{border-color:#cbd5e1;background:#f8fafc;transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(15,23,42,.35)}
+.ww-dl:active{transform:translateY(0)}
 
-.info{display:flex;gap:9px;background:#f8fafc;border:1px solid var(--track);border-radius:14px;padding:13px 15px;margin-top:18px}
-.info svg{width:16px;height:16px;color:var(--ink-muted);flex-shrink:0;margin-top:2px}
-.info p{font-size:12.5px;line-height:1.55;color:var(--ink-muted)}
-.info b{color:var(--ink-soft)}
+/* ---- countdown ---- */
+.ww-valid{display:flex;align-items:center;gap:clamp(8px,3vw,12px);margin:clamp(16px,4.5vw,20px) 2px 14px}
+.ww-valid .lbl{font-size:clamp(12px,3.2vw,13px);font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.ww-valid .track{flex:1;height:8px;background:var(--track);border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(15,23,42,.06)}
+.ww-valid .fill{height:100%;width:100%;border-radius:999px;transition:width 1s linear;
+  background:linear-gradient(90deg,var(--lime),var(--lime-2));box-shadow:0 0 12px -2px rgba(190,230,60,.7)}
+.ww-valid .time{font-size:clamp(12px,3.2vw,13px);font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 
-/* how-to steps */
-.steps{counter-reset:s;display:flex;flex-direction:column;gap:14px;padding:4px 2px}
-.step{display:flex;gap:14px;align-items:flex-start}
-.step .n{counter-increment:s;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--lime-soft);color:var(--lime-2);
-  font-weight:800;font-size:14px;display:grid;place-items:center}
-.step .n::before{content:counter(s)}
-.step .t b{display:block;font-size:14.5px;font-weight:700;color:var(--ink)}
-.step .t span{font-size:13px;color:var(--ink-soft)}
+/* ---- live status ---- */
+.ww-autostatus{display:flex;align-items:center;justify-content:center;gap:9px;font-size:clamp(13px,3.5vw,14px);font-weight:700;color:var(--ink-soft);margin:6px 0 2px}
+.ww-autostatus.ok{color:var(--lime-2)}.ww-autostatus.fail{color:var(--danger)}
+.ww-spin{width:15px;height:15px;border:2px solid #d7dce2;border-top-color:var(--lime-2);border-radius:50%;animation:ww-spin .8s linear infinite;flex:0 0 auto}
+@keyframes ww-spin{to{transform:rotate(360deg)}}
 
+/* ---- info ---- */
+.ww-info{display:flex;gap:9px;background:linear-gradient(180deg,#fafbfc,#f6f8fa);border:1px solid var(--track);border-radius:14px;padding:12px 14px;margin-top:clamp(14px,4vw,18px)}
+.ww-info svg{width:16px;height:16px;color:var(--lime-2);flex-shrink:0;margin-top:2px}
+.ww-info p{font-size:12.5px;line-height:1.55;color:var(--ink-muted)}
+.ww-info b{color:var(--ink-soft)}
 
-.autostatus{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13.5px;font-weight:700;color:var(--ink-soft);margin-bottom:12px}
-.spin{width:15px;height:15px;border:2px solid #d7dce2;border-top-color:var(--lime-2);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+/* ---- how-to steps ---- */
+.ww-steps{counter-reset:s;display:flex;flex-direction:column;gap:14px;padding:6px 2px}
+.ww-step{display:flex;gap:14px;align-items:flex-start}
+.ww-step .n{counter-increment:s;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--lime-soft);color:var(--lime-2);font-weight:800;font-size:14px;display:grid;place-items:center}
+.ww-step .n::before{content:counter(s)}
+.ww-step .t b{display:block;font-size:14.5px;font-weight:700;color:var(--ink)}
+.ww-step .t span{font-size:13px;color:var(--ink-soft);line-height:1.5}
 
-/* success */
-.success{position:absolute;inset:0;border-radius:26px;background:rgba(255,255,255,.98);z-index:50;
+/* ---- success ---- */
+.ww-success{position:absolute;inset:0;border-radius:inherit;background:rgba(255,255,255,.98);z-index:50;
   display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px;text-align:center}
-.success.show{display:flex;animation:fade .3s ease}
-.success .ic{width:92px;height:92px;border-radius:50%;background:linear-gradient(180deg,#c8f04a,var(--lime));
-  display:grid;place-items:center;box-shadow:0 20px 50px -14px rgba(190,230,60,.75);animation:pop .5s cubic-bezier(.2,1.4,.5,1)}
-@keyframes pop{0%{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
-.success .ic svg{width:46px;height:46px;stroke:#0e1a05;stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.success h2{font-size:24px;font-weight:800;color:var(--ink)}
-.success p{color:var(--ink-soft);font-size:14px}
-.success .utr{margin-top:4px;font-size:12.5px;color:var(--ink-soft);background:#f1f5f9;border:1px solid var(--line);padding:7px 14px;border-radius:10px}
+.ww-success.show{display:flex;animation:ww-fade .3s ease}
+.ww-success .ic{width:92px;height:92px;border-radius:50%;background:linear-gradient(180deg,#c8f04a,var(--lime));
+  display:grid;place-items:center;box-shadow:0 20px 50px -14px rgba(190,230,60,.75);animation:ww-pop .55s cubic-bezier(.2,1.4,.5,1)}
+@keyframes ww-pop{0%{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.ww-success .ic svg{width:46px;height:46px}
+.ww-success h2{font-size:23px;font-weight:800;color:var(--ink)}
+.ww-success p{color:var(--ink-soft);font-size:14px}
 
-
-@media (max-width:380px){
-  .body{padding:14px 13px 22px}.head{padding:16px 16px 18px}
-  .head .amt{font-size:30px;margin-top:28px}
-  .head .verify-pill{font-size:10.5px;padding:5px 9px}
-  .qr-card img{width:170px;height:170px}
-  .tab{font-size:13px;padding:10px}
+/* ---- responsive niceties ---- */
+@media (max-width:480px){
+  .ww-imb-body{align-items:flex-start;padding:14px 12px}
 }
-.demo{position:fixed;z-index:80;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;
-  background:rgba(15,22,32,.95);border:1px solid rgba(255,255,255,.12);padding:7px 9px 7px 13px;border-radius:999px;font-size:11.5px;color:#94a3b8}
-.demo button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
-.demo .ok{background:var(--lime);color:#0e1a05}.demo .re{background:rgba(255,255,255,.1);color:#cbd5e1}
+@media (min-width:560px){
+  .ww-sheet{max-width:440px}
+}
+@media (prefers-reduced-motion:reduce){
+  .ww-sheet,.ww-pane,.ww-success.show,.ww-success .ic{animation:none}
+  .ww-spin{animation-duration:1.4s}
+}
+
+.ww-demo{position:fixed;z-index:80;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;background:rgba(15,22,32,.95);border:1px solid rgba(255,255,255,.12);padding:7px 9px 7px 13px;border-radius:999px;font-size:11.5px;color:#94a3b8}
+.ww-demo button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.ww-demo .ok{background:#bee63c;color:#0e1a05}.ww-demo .re{background:rgba(255,255,255,.1);color:#cbd5e1}
 </style>
 </head>
-<body>
-<div class="sheet">
-  <div class="head">
-    <span class="verify-pill">⚡ Instant verification</span>
-    <div class="amt"><span class="rs">₹</span>234.18</div>
-    <div class="ord">Order #11032</div>
+<body class="ww-imb-body">
+<div class="ww-sheet">
+  <div class="ww-head">
+    <span class="ww-vpill">⚡ Instant verification</span>
+    <div class="ww-amt"><span class="rs">₹</span>234.18</div>
+    <div class="ww-ord">Order #11032</div>
   </div>
 
-  <div class="body">
-    <div class="tabs" id="tabs" data-active="scan">
-      <span class="tab-ind"></span>
-      <button class="tab active" data-pane="scan">Scan QR</button>
-      <button class="tab" data-pane="how">How to pay</button>
+  <div class="ww-bodyx">
+    <div class="ww-tabs" id="ww-tabs" data-active="scan">
+      <span class="ww-tab-ind"></span>
+      <button class="ww-tab active" data-pane="scan">Scan QR</button>
+      <button class="ww-tab" data-pane="how">How to pay</button>
     </div>
 
-    <!-- SCAN QR -->
-    <div class="pane active" id="pane-scan">
-      <div class="qr-card">
-        <img alt="UPI QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhsAAAIbAQAAAABqXGEQAAAFVUlEQVR4nO2dXY7qOBCFT3WQ0m/0DoJ0FwI7I+xglhR2QnYAbyCRPvNQ5R9mRtM9ut09WDp+CiH5FEtlu1x1bBvx22V++X0GIIgggggiyLdCFktls5iZY+cVDm+03c1sE4/ezGwFADi+Ir/z+oVfIoggPwMBeceeJEkMd+z5DgAY7sD6HehJkuP6HdsrMMQlicHfmXry9DzVEUSQz0Mu0W13HC8vAMBTR84dJ8DMjHPcXYzneLOMDE9XHUEE+S+QxUYYSbpnQ9vdDMPd/+xpm472Bhxfv/1LBBHkxyAdbVhsB/BoNsbNeYXDQB7MeDSL4eC7v0QQQb4dsiZ5BQDs5xfvzDuOybcvvf2WHNOzHRnzgKerjiCCfAJy8KBMcnImwLY3Gy/u22+8MQAAFmO0i9nf2X3tlwgiyE9AVkBXMlYLABpgAID1YuhBLDj8Ef16R1yA7RUPWa7nqY4ggnwSsth4MdvdzKynDe8AwGPPEcYpgvXFoT+80XY+BhzeqLi9IC1CQJI8ew9OkmfzED4Z/g55z85/xO2Txx+XitsL0h5ksRGeed0sNq4Xs1fwhGTVKUt7XBPzCrh05BV+qbi9IA1D1p5yPa5wsBeXIeQclRfaLqWrXLJQB3WerTqCCPJBSdoD9D5LXWedAmCcegIdR7gXdOq8fVzza1vKyRGkOUjtuvMUwfrK4yfJO/bncP4f3HxpcgRpFOJStLPlFNQZRX9GTnADP1u+pN9FxxAyyOwFaQ3iPXjYL3P4Jmst0xgQtg7AL+vXZPaCNAYpUcvkuLiTcwL23q9nh57Md5PHb3JyBGkRUqa0ydYjFt+lxuCxzDKPRXj84frI7AVpD+K9fVlbEl18Tkz5XaBqAR71GUoLkNkL0hgEdaCmcmeYW0AK6sQYkD3+amR4nuoIIsinSnJc6lIMPErl0Ge1MaAprSCNQpB696ko6yNYDyCpb/aeowJQVth63FO+vSANQnIkZ+qZfHtea88mLyoEqvWF9Rpzmb0gLUIOQ47kAMBxTTNLK07SPHZL8rjKcfvTt3yJIIL8HOTykrbBCSkaSZfep81xjNPNgI6cQ5u/SjPh56uOIIJ8CFmMXGwfkhsA6KO3p+3pialLLB9czIbQn/kmCl/6JYII8jMQJEUCY3uos989IV0C8MkrIpqfp7/7syI5gjQJKQriko+derrrbnX4ZksCqGVrI5SuEqRJCKpIJOBd/Dapb96T2vih48+vATJ7QZqEZCnlFKKzWEuLYvYn5OVXp6w/y5IFmb0g7UHCySnKesbOrvfa3wnfvopa1mFNmb0gjUGKJofZoZ/8n1qRcPZnYziY0kbJSlcJ0iokRyJt03FMi8U7mu+I48XSBmmHN/i6245jbKLwXNURRJCPS56bXuvOHEC91X2SIxcpWi3lUW8vSGOQ2n7zvb5MXpFPeEgePyI1W/aGldkL0hikCI/LuSXV6qrJ71abKMCfBZAOQZHZC9IapJ6b5rW0RW08+UNJfTPEyBDvKpIjSJuQ7OSQzC0ADwlbZifHy8Ou9zJ7QdqEVCcVwhWYvvFl5GPzSYUpkpODOljrWAdBmoT87aTCEskB8Je9jQHUY8D+DE1pBWkXUk4qtLcI1ES6KpT180uR5zDp7XNq69mqI4gg/15WD7+WFdZnAOC8AcCX7fWV8687QBxfr5h/8WAA+qsNJwCLof+qLxFEkP8Vckwdf3TmftzJ/mIYbmmpIWZvMFpdJUiDkEffPkvRqtxtUqWlUomUlaUVpE1IWUkIpNVV2xLL3F7z8qsptkLzFuA6BaWrBGkSYvz4mY/K/DzVEUQQQQQR5B/LnwQBAEQNQvxOAAAAAElFTkSuQmCC">
-        <div class="qr-logo"><span class="w">wee</span><span class="o">woo</span></div>
+    <div class="ww-pane active" id="ww-pane-scan">
+      <div class="ww-qr-card">
+        <div id="ww-qr"><img alt="UPI QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhsAAAIbAQAAAABqXGEQAAAFVUlEQVR4nO2dXY7qOBCFT3WQ0m/0DoJ0FwI7I+xglhR2QnYAbyCRPvNQ5R9mRtM9ut09WDp+CiH5FEtlu1x1bBvx22V++X0GIIgggggiyLdCFktls5iZY+cVDm+03c1sE4/ezGwFADi+Ir/z+oVfIoggPwMBeceeJEkMd+z5DgAY7sD6HehJkuP6HdsrMMQlicHfmXry9DzVEUSQz0Mu0W13HC8vAMBTR84dJ8DMjHPcXYzneLOMDE9XHUEE+S+QxUYYSbpnQ9vdDMPd/+xpm472Bhxfv/1LBBHkxyAdbVhsB/BoNsbNeYXDQB7MeDSL4eC7v0QQQb4dsiZ5BQDs5xfvzDuOybcvvf2WHNOzHRnzgKerjiCCfAJy8KBMcnImwLY3Gy/u22+8MQAAFmO0i9nf2X3tlwgiyE9AVkBXMlYLABpgAID1YuhBLDj8Ef16R1yA7RUPWa7nqY4ggnwSsth4MdvdzKynDe8AwGPPEcYpgvXFoT+80XY+BhzeqLi9IC1CQJI8ew9OkmfzED4Z/g55z85/xO2Txx+XitsL0h5ksRGeed0sNq4Xs1fwhGTVKUt7XBPzCrh05BV+qbi9IA1D1p5yPa5wsBeXIeQclRfaLqWrXLJQB3WerTqCCPJBSdoD9D5LXWedAmCcegIdR7gXdOq8fVzza1vKyRGkOUjtuvMUwfrK4yfJO/bncP4f3HxpcgRpFOJStLPlFNQZRX9GTnADP1u+pN9FxxAyyOwFaQ3iPXjYL3P4Jmst0xgQtg7AL+vXZPaCNAYpUcvkuLiTcwL23q9nh57Md5PHb3JyBGkRUqa0ydYjFt+lxuCxzDKPRXj84frI7AVpD+K9fVlbEl18Tkz5XaBqAR71GUoLkNkL0hgEdaCmcmeYW0AK6sQYkD3+amR4nuoIIsinSnJc6lIMPErl0Ge1MaAprSCNQpB696ko6yNYDyCpb/aeowJQVth63FO+vSANQnIkZ+qZfHtea88mLyoEqvWF9Rpzmb0gLUIOQ47kAMBxTTNLK07SPHZL8rjKcfvTt3yJIIL8HOTykrbBCSkaSZfep81xjNPNgI6cQ5u/SjPh56uOIIJ8CFmMXGwfkhsA6KO3p+3pialLLB9czIbQn/kmCl/6JYII8jMQJEUCY3uos989IV0C8MkrIpqfp7/7syI5gjQJKQriko+derrrbnX4ZksCqGVrI5SuEqRJCKpIJOBd/Dapb96T2vih48+vATJ7QZqEZCnlFKKzWEuLYvYn5OVXp6w/y5IFmb0g7UHCySnKesbOrvfa3wnfvopa1mFNmb0gjUGKJofZoZ/8n1qRcPZnYziY0kbJSlcJ0iokRyJt03FMi8U7mu+I48XSBmmHN/i6245jbKLwXNURRJCPS56bXuvOHEC91X2SIxcpWi3lUW8vSGOQ2n7zvb5MXpFPeEgePyI1W/aGldkL0hikCI/LuSXV6qrJ71abKMCfBZAOQZHZC9IapJ6b5rW0RW08+UNJfTPEyBDvKpIjSJuQ7OSQzC0ADwlbZifHy8Ou9zJ7QdqEVCcVwhWYvvFl5GPzSYUpkpODOljrWAdBmoT87aTCEskB8Je9jQHUY8D+DE1pBWkXUk4qtLcI1ES6KpT180uR5zDp7XNq69mqI4gg/15WD7+WFdZnAOC8AcCX7fWV8687QBxfr5h/8WAA+qsNJwCLof+qLxFEkP8Vckwdf3TmftzJ/mIYbmmpIWZvMFpdJUiDkEffPkvRqtxtUqWlUomUlaUVpE1IWUkIpNVV2xLL3F7z8qsptkLzFuA6BaWrBGkSYvz4mY/K/DzVEUQQQQQR5B/LnwQBAEQNQvxOAAAAAElFTkSuQmCC"></div>
+        <div class="ww-qr-logo"><span class="w">wee</span><span class="o">woo</span></div>
       </div>
 
-      <p class="hint">Scan with any UPI app. On mobile, tap Download and open the QR from your app's gallery.</p>
+      <p class="ww-hint">Scan with any UPI app. On mobile, tap Download and open the QR from your app's gallery.</p>
 
-      <button class="dl" id="dl">
+      <button class="ww-dl" id="ww-dl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
         Download QR
       </button>
 
-      <div class="valid">
+      <div class="ww-valid">
         <span class="lbl">QR valid for</span>
-        <span class="track"><span class="fill" id="fill"></span></span>
-        <span class="time" id="time">9:48</span>
+        <span class="track"><span class="fill" id="ww-fill"></span></span>
+        <span class="time" id="ww-time">10:00</span>
       </div>
 
-      <div class="autostatus" id="autostatus"><span class="spin"></span> Auto-checking your payment…</div>
+      <div class="ww-autostatus" id="ww-status"><span class="ww-spin"></span> <span>Auto-checking your payment…</span></div>
 
-      <div class="info">
+      <div class="ww-info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-        <p><b>No need to do anything</b> — we check your payment automatically and confirm the moment it arrives. Just keep this page open.</p>
+        <p><b>No need to do anything</b> — we check your payment automatically and confirm the moment it arrives. Keep this page open.</p>
       </div>
     </div>
 
-    <!-- HOW TO PAY -->
-    <div class="pane" id="pane-how">
-      <div class="steps">
-        <div class="step"><span class="n"></span><span class="t"><b>Open any UPI app</b><span>Google Pay, PhonePe, Paytm, or BHIM.</span></span></div>
-        <div class="step"><span class="n"></span><span class="t"><b>Scan the QR code</b><span>Or tap "Download QR to pay" and pick it from your gallery.</span></span></div>
-        <div class="step"><span class="n"></span><span class="t"><b>Pay ₹234.18</b><span>Confirm the payment in your UPI app.</span></span></div>
-        <div class="step"><span class="n"></span><span class="t"><b>Tap "I have completed payment"</b><span>We verify with your bank instantly — no waiting.</span></span></div>
+    <div class="ww-pane" id="ww-pane-how">
+      <div class="ww-steps">
+        <div class="ww-step"><span class="n"></span><span class="t"><b>Open any UPI app</b><span>Google Pay, PhonePe, Paytm, or BHIM.</span></span></div>
+        <div class="ww-step"><span class="n"></span><span class="t"><b>Scan the QR code</b><span>Or tap "Download QR" and pick it from your gallery.</span></span></div>
+        <div class="ww-step"><span class="n"></span><span class="t"><b>Pay ₹234.18</b><span>Confirm the payment in your UPI app.</span></span></div>
+        <div class="ww-step"><span class="n"></span><span class="t"><b>Done — we verify automatically</b><span>No waiting and nothing to click. Just keep this page open.</span></span></div>
       </div>
     </div>
   </div>
+
+  <div class="ww-success" id="ww-success">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1a05" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+    <h2>Payment verified</h2>
+    <p>Redirecting to your order…</p>
+  </div>
 </div>
 
-  <h2>Payment verified</h2>
-  <p>₹234.18 received successfully</p>
-  <div class="utr">UTR · 435644746487</div>
-  <p style="margin-top:6px">Redirecting to your order…</p>
-  <div class="success" id="success">
-  <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
-</div>
-
-<div class="demo">
-  Preview:
-  <button class="ok" onclick="document.getElementById('success').classList.add('show')">▶ Simulate verified</button>
-  <button class="re" onclick="document.getElementById('success').classList.remove('show')">Reset</button>
+<div class="ww-demo">Preview:
+  <button class="ok" onclick="document.getElementById('ww-success').classList.add('show')">▶ Simulate verified</button>
+  <button class="re" onclick="document.getElementById('ww-success').classList.remove('show')">Reset</button>
 </div>
 
 <script>
-// tabs
-var tabs=document.getElementById('tabs');
-tabs.querySelectorAll('.tab').forEach(function(b){
-  b.addEventListener('click',function(){
-    tabs.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
-    document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('active')});
-    b.classList.add('active');
-    var pane=b.getAttribute('data-pane');
-    document.getElementById('pane-'+pane).classList.add('active');
-    tabs.setAttribute('data-active',pane);
-  });
-});
-// countdown
-var t=588,fill=document.getElementById('fill'),time=document.getElementById('time');
-setInterval(function(){ if(t>0){t--; var m=Math.floor(t/60),s=String(t%60).padStart(2,'0'); time.textContent=m+':'+s; fill.style.width=(t/588*100)+'%'; }},1000);
-// verify button -> success (in real page this calls the status endpoint)
-document.getElementById('verify').addEventListener('click',function(){ document.getElementById('success').classList.add('show'); });
-document.getElementById('dl').addEventListener('click',function(){ alert('Downloads the QR image so mobile users can scan it from their gallery.'); });
+var tabs=document.getElementById('ww-tabs');
+tabs.querySelectorAll('.ww-tab').forEach(function(b){b.addEventListener('click',function(){
+  tabs.querySelectorAll('.ww-tab').forEach(function(t){t.classList.remove('active')});
+  document.querySelectorAll('.ww-pane').forEach(function(p){p.classList.remove('active')});
+  b.classList.add('active');var p=b.getAttribute('data-pane');
+  document.getElementById('ww-pane-'+p).classList.add('active');tabs.setAttribute('data-active',p);
+})});
+var t=600,fill=document.getElementById('ww-fill'),time=document.getElementById('ww-time');
+setInterval(function(){if(t>0){t--;time.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');fill.style.width=(t/600*100)+'%';}},1000);
+document.getElementById('ww-dl').addEventListener('click',function(){alert('Downloads the QR image so mobile users can scan it from their gallery.');});
 </script>
 </body>
 </html>
