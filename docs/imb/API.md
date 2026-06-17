@@ -8,16 +8,21 @@ fetching, so this file is the source of truth checked into the repo.
 > is read from `backend/.env` (`IMB_USER_TOKEN`). The sample token shown in the
 > original docs is illustrative only.
 
-## Hosts
+## Hosts & endpoints
 
-| Host | Notes |
+| Endpoint | URL |
 | --- | --- |
-| `https://api.imbpay.in` | **Current recommended host** (default `IMB_API_BASE`). Per IMB's notice, fixes QR-generation / Airtel-network payment issues. Endpoints: `/api/create-order`, `/api/check-order-status`. |
-| `https://pay.imb.org.in` | Legacy host (deprecated). |
-| `https://secure-stage.imb.org.in` | Legacy staging host (deprecated). |
+| Create order (custom checkout) | `POST https://api.imbpay.in/v2/create-order` |
+| Check order status | `POST https://api.imbpay.in/api/check-order-status` |
 
-The host is configurable via `IMB_API_BASE` (backend) or the gateway settings
-(WooCommerce); switch hosts without code changes. Endpoint paths are unchanged.
+`https://pay.imb.org.in` and `https://secure-stage.imb.org.in` are legacy/deprecated.
+In the WooCommerce plugin the host is set in the gateway settings (default
+`https://api.imbpay.in`); the `/v2/create-order` and `/api/check-order-status`
+paths are derived from it and can be overridden via the `ww_imb_create_order_url`
+/ `ww_imb_status_url` filters.
+
+> The custom-checkout **`/v2/create-order`** endpoint returns the extra
+> `phonepe_link` field; the older `/api/create-order` does not.
 
 ---
 
@@ -26,8 +31,8 @@ The host is configurable via `IMB_API_BASE` (backend) or the gateway settings
 Creates a collection order and returns the payment links + UPI deep links.
 
 ```
-POST {IMB_API_BASE}/api/create-order
-Content-Type: multipart/form-data
+POST https://api.imbpay.in/v2/create-order
+Content-Type: application/x-www-form-urlencoded
 ```
 
 ### Request (form-data)
@@ -51,17 +56,24 @@ Content-Type: multipart/form-data
   "result": {
     "orderId": "999999991111166",
     "payment_url": "https://ekqr.live/d57e63cdf7a39afe018da74207f6ed7c...",
-    "paytm_link": "paytmmp://cash_wallet?pa=yespay.qtosno9krs6nrb@yesbankltd&pn=...&am=10.00&cu=INR&tn=UPIx5lns1765635326&tr=UPIx5lns1765635326&mc=4722&sign=...",
+    "paytm_link": "paytmmp://...&am=10.00&...",
+    "phonepe_link": "phonepe://upi/payment-link",
     "bhim_link": "upi://pay?pa=yespay.qtosno9krs6nrb@yesbankltd&am=10.00&pn=Imb%20Payment%20Collection&tn=UPIx5lns1765635326&tr=UPIx5lns1765635326",
     "check_link": "https://check.imb.org.in/quintustech_status/UPIx5lns1765635326"
   }
 }
 ```
 
-- `payment_url` — IMB-hosted payment page (fallback / redirect option).
+> Per IMB: do **not** redirect to `payment_url` for a custom checkout — build the
+> UI from these values. Failed response: `{ "status": "false", "message": "Order_id Already Exist" }`.
+
+- `payment_url` — IMB-hosted payment page (we don't use it for the custom flow).
 - `bhim_link` — canonical `upi://pay?...` string. **We render this as the QR code**
   on our own branded checkout page (this is "the QR code of IMB" on our design).
-- `paytm_link` — Paytm-specific deep link for the app-intent button.
+- `paytm_link` / `phonepe_link` — app-intent deep links for direct Paytm/PhonePe buttons.
+- `check_link` — per-order status URL (can be polled directly as an alternative
+  to `check-order-status`). We use `check-order-status` because it also returns
+  the amount + UTR needed for the amount guard and receipt.
 - `check_link` — browser status page (human-readable).
 
 On failure `status` is `false` and `message` describes the error

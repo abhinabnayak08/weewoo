@@ -25,11 +25,17 @@ final class WW_IMB_Client
 
     private string $user_token;
     private string $api_base;
+    private string $create_url;
+    private string $status_url;
 
     public function __construct(string $user_token, string $api_base = 'https://api.imbpay.in')
     {
         $this->user_token = trim($user_token);
         $this->api_base   = rtrim(trim($api_base), '/');
+        // Custom-checkout create-order lives at /v2 (returns phonepe_link etc.);
+        // status check stays at /api. Both overridable for non-standard accounts.
+        $this->create_url = (string) apply_filters('ww_imb_create_order_url', $this->api_base . '/v2/create-order', $this->api_base);
+        $this->status_url = (string) apply_filters('ww_imb_status_url', $this->api_base . '/api/check-order-status', $this->api_base);
     }
 
     /**
@@ -49,9 +55,9 @@ final class WW_IMB_Client
             'remark2'         => $args['remark2'] ?? '',
         ];
 
-        $resp = wp_remote_post($this->api_base . '/api/create-order', [
+        $resp = wp_remote_post($this->create_url, [
             'timeout' => 25,
-            'body'    => $body, // multipart/form-urlencoded form fields
+            'body'    => $body, // application/x-www-form-urlencoded (per IMB docs)
         ]);
 
         $data = $this->parse_response($resp);
@@ -78,7 +84,7 @@ final class WW_IMB_Client
      */
     public function check_order_status(string $order_id): ?array
     {
-        $url    = $this->api_base . '/api/check-order-status';
+        $url    = $this->status_url;
         $fields = ['user_token' => $this->user_token, 'order_id' => $order_id];
 
         // Attempt 1 — raw JSON body (as documented).

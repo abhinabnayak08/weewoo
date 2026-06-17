@@ -116,7 +116,7 @@ async def test_create_order_success(monkeypatch):
     import httpx
 
     def handler(request: httpx.Request) -> httpx.Response:
-        assert request.url.path == "/api/create-order"
+        assert request.url.path == "/v2/create-order"
         body = request.content.decode()
         assert "user_token=tok" in body or "user_token" in body
         return httpx.Response(

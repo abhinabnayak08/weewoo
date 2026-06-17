@@ -197,6 +197,7 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         $order->update_meta_data('_ww_imb_order_id', $imb_order_id);
         $order->update_meta_data('_ww_imb_bhim', (string) ($result['bhim_link'] ?? ''));
         $order->update_meta_data('_ww_imb_paytm', (string) ($result['paytm_link'] ?? ''));
+        $order->update_meta_data('_ww_imb_phonepe', (string) ($result['phonepe_link'] ?? ''));
         $order->update_meta_data('_ww_imb_payurl', (string) ($result['payment_url'] ?? ''));
         $order->update_meta_data('_ww_imb_check', (string) ($result['check_link'] ?? ''));
         $order->update_status('pending', __('Awaiting UPI payment via IMB.', 'weewoo-imb-pay'));

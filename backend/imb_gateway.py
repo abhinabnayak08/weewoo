@@ -2,7 +2,7 @@
 
 Thin async wrapper around the two IMB endpoints we depend on:
 
-    POST {base}/api/create-order        (multipart form)
+    POST {base}/v2/create-order         (form-encoded)
     POST {base}/api/check-order-status  (json)
 
 Plus helpers to normalize IMB's status fields and to render the UPI deep link
@@ -186,7 +186,7 @@ class IMBGateway:
             "remark1": remark1,
             "remark2": remark2,
         }
-        url = f"{self.config.api_base}/api/create-order"
+        url = f"{self.config.api_base}/v2/create-order"
         async with httpx.AsyncClient(timeout=self.config.timeout) as client:
             resp = await client.post(url, data=form)
         body = self._parse(resp)
