@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>WeeWoo Pay — Checkout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#070b16; --bg1:#0c1326; --card:rgba(255,255,255,.045);
+  --stroke:rgba(255,255,255,.09); --text:#eef2ff; --muted:#94a3b8;
+  --brand:#6366f1; --brand2:#22d3ee; --ok:#22c55e; --fail:#ef4444;
+  --radius:22px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--text); background:var(--bg0);
+  background:
+    radial-gradient(900px 500px at 12% -8%, rgba(99,102,241,.28), transparent 60%),
+    radial-gradient(800px 520px at 100% 10%, rgba(34,211,238,.16), transparent 55%),
+    radial-gradient(700px 700px at 50% 120%, rgba(99,102,241,.12), transparent 60%),
+    linear-gradient(180deg,var(--bg0),var(--bg1));
+  min-height:100vh; display:grid; place-items:center; padding:28px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+.orb{position:fixed;border-radius:50%;filter:blur(70px);opacity:.5;z-index:0;animation:float 14s ease-in-out infinite}
+.orb.a{width:340px;height:340px;background:#6366f1;top:-80px;left:-60px}
+.orb.b{width:300px;height:300px;background:#22d3ee;bottom:-90px;right:-50px;animation-delay:-5s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(26px)}}
+
+.wrap{position:relative;z-index:1;width:min(920px,100%);
+  display:grid;grid-template-columns:1.05fr 1fr;gap:18px}
+@media (max-width:760px){.wrap{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);
+  backdrop-filter:blur(16px);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+
+/* ---- left: order summary ---- */
+.summary{padding:26px 24px;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;font-weight:800;
+  font-family:"Space Grotesk";background:linear-gradient(135deg,var(--brand),var(--brand2));color:#04122b;
+  box-shadow:0 8px 22px rgba(99,102,241,.5)}
+.brand b{font-family:"Space Grotesk";font-size:17px;letter-spacing:.2px}
+.brand span{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:1px}
+.merchant{font-size:12.5px;color:var(--muted)}
+.merchant b{color:var(--text);font-weight:600}
+
+.line{display:flex;justify-content:space-between;align-items:center;font-size:13.5px;color:var(--muted)}
+.line .v{color:var(--text);font-weight:500}
+.items{display:flex;flex-direction:column;gap:12px;padding:14px 0;border-top:1px dashed var(--stroke);border-bottom:1px dashed var(--stroke)}
+.item{display:flex;gap:12px;align-items:center}
+.thumb{width:44px;height:44px;border-radius:11px;background:linear-gradient(135deg,#1e293b,#334155);
+  display:grid;place-items:center;font-size:19px;border:1px solid var(--stroke)}
+.item .t{font-size:13.5px;font-weight:600}
+.item .s{font-size:11.5px;color:var(--muted)}
+.item .p{margin-left:auto;font-weight:600;font-size:13.5px}
+.total{display:flex;justify-content:space-between;align-items:baseline}
+.total .lbl{font-size:13px;color:var(--muted)}
+.total .amt{font-family:"Space Grotesk";font-size:30px;font-weight:700;letter-spacing:.5px}
+.secure{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted);margin-top:2px}
+.dotg{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+
+/* ---- right: payment ---- */
+.pay{padding:26px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;position:relative}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#c7d2fe;
+  background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.3);padding:6px 13px;border-radius:999px}
+.timer{font-variant-numeric:tabular-nums}
+.qrbox{position:relative;background:#fff;border-radius:18px;padding:14px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.qrbox img{display:block;width:208px;height:208px;border-radius:6px}
+.qrbox .badge{position:absolute;inset:auto auto 50% 50%;transform:translate(-50%,50%);
+  width:44px;height:44px;border-radius:12px;background:#fff;display:grid;place-items:center;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);font-weight:800;color:var(--brand);font-family:"Space Grotesk";font-size:13px;border:2px solid #eef}
+.scanline{position:absolute;left:14px;right:14px;top:14px;height:30px;border-radius:8px;
+  background:linear-gradient(180deg,rgba(99,102,241,.55),transparent);animation:scan 2.4s ease-in-out infinite;pointer-events:none}
+@keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(178px)}}
+.howto{font-size:13px;color:var(--muted);line-height:1.5;max-width:260px}
+.apps{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
+.appchip{font-size:11px;font-weight:600;color:#cbd5e1;background:rgba(255,255,255,.05);
+  border:1px solid var(--stroke);padding:6px 11px;border-radius:9px;display:flex;align-items:center;gap:6px}
+.appchip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.sep{display:flex;align-items:center;gap:10px;width:100%;color:var(--muted);font-size:11px}
+.sep::before,.sep::after{content:"";flex:1;height:1px;background:var(--stroke)}
+.btn{width:100%;padding:13px;border-radius:13px;font-weight:700;font-size:14px;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--brand),#818cf8);color:#fff;box-shadow:0 10px 26px rgba(99,102,241,.45);
+  transition:transform .15s ease, box-shadow .15s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(99,102,241,.55)}
+.status{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;margin-top:2px}
+.spin{width:15px;height:15px;border:2px solid #475569;border-top-color:#c7d2fe;border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.foot{font-size:10.5px;color:#64748b;margin-top:2px}
+
+/* success overlay */
+.success{position:absolute;inset:0;border-radius:var(--radius);background:rgba(7,11,22,.86);
+  backdrop-filter:blur(8px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:26px;text-align:center;animation:fade .35s ease}
+.success.show{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.check{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#22c55e,#15803d);
+  display:grid;place-items:center;box-shadow:0 0 0 8px rgba(34,197,94,.15),0 14px 40px rgba(34,197,94,.5);
+  animation:pop .5s cubic-bezier(.2,1.4,.5,1)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.check svg{width:42px;height:42px}
+.success h2{margin:4px 0 0;font-family:"Space Grotesk"}
+.success .det{font-size:12.5px;color:var(--muted)}
+.success .utr{font-size:11.5px;color:#cbd5e1;background:rgba(255,255,255,.05);border:1px solid var(--stroke);
+  padding:6px 12px;border-radius:9px;font-variant-numeric:tabular-nums}
+
+/* demo control */
+.demo{position:fixed;z-index:5;left:50%;bottom:18px;transform:translateX(-50%);
+  display:flex;gap:8px;align-items:center;background:rgba(12,19,38,.9);border:1px solid var(--stroke);
+  padding:8px 10px 8px 14px;border-radius:999px;font-size:12px;color:var(--muted);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.demo button{font-size:12px;font-weight:700;border:0;border-radius:999px;padding:7px 13px;cursor:pointer}
+.demo .ok{background:var(--ok);color:#04210f}
+.demo .re{background:rgba(255,255,255,.08);color:#cbd5e1}
+</style>
+</head>
+<body>
+<div class="orb a"></div><div class="orb b"></div>
+
+<div class="wrap">
+  <!-- LEFT: order summary -->
+  <section class="card summary">
+    <div class="brand">
+      <div class="logo">W</div>
+      <div><b>WeeWoo Pay</b><span>Secure UPI checkout</span></div>
+    </div>
+    <div class="merchant">Paying <b>WeeWoo Store</b> · Order <b>#WW-10482</b></div>
+    <div class="items">
+      <div class="item"><div class="thumb">🎧</div>
+        <div><div class="t">Aurora Wireless Headphones</div><div class="s">Qty 1 · Midnight</div></div>
+        <div class="p">₹1,299</div></div>
+      <div class="item"><div class="thumb">🔌</div>
+        <div><div class="t">Fast Charge Adapter</div><div class="s">Qty 1 · 30W</div></div>
+        <div class="p">₹200</div></div>
+    </div>
+    <div class="line"><span>Subtotal</span><span class="v">₹1,499</span></div>
+    <div class="line"><span>Shipping</span><span class="v">Free</span></div>
+    <div class="total"><span class="lbl">Total payable</span><span class="amt">₹1,499</span></div>
+    <div class="secure"><span class="dotg"></span>256-bit encrypted · Powered by IMB UPI · NPCI</div>
+  </section>
+
+  <!-- RIGHT: payment -->
+  <section class="card pay">
+    <div class="pill">⏳ <span>QR expires in <span class="timer" id="timer">09:58</span></span></div>
+    <div class="qrbox">
+      <div class="scanline"></div>
+      <img alt="Scan to pay" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgUAAAIFAQAAAABq57OgAAAFD0lEQVR4nO2dwY3rPAyEZ+IFnJvTgbcTp6S/AzudxZ04HTi3BIgz/4G0rGTxgAe8LKADdTK0zgcL4BLkkJIo/Nu47/4RAAQhCJ8lQNP2KGlonuhuQCtptuk2zWoCetkLPrpbCasIQhDeCJUkSTfgQuqyw7gHsJDtE52ECzkAQG1u/VrpbP8B0vNT3xCEIHyacCJ5BIBKPACopfELuJqBtw/0MzCS+Q8vJA8f/IYgBOGXCAs1U7IIZAB1BjR+4XQAuhv4DQDi8Te/IQhB+CihlflqgN8LNYvHO/ldSbMZuB44HX73G4IQhM8QeklnAFgoLSSpCUDzRCdpWuhxCfmV3k3pZDGrCEIQNsJCkuQeuNTiAehu6RF3ApUGiMc7NVXiQTwC9pvdp74hCEH4IOEL7Q/FemxEVOj/25nwsRANMO5BVMB1l+QQIPTqIBRIgKak7Jl0bRH0BPSzv1JpQMohsxAboBR6dRCKI5jwPAOopcnyQt2gqdLQmIrdPvJ3B1iI0j7Qz2HVQSiRAMnk6O7mRmtWnT1O9mInrXqfm73CqoNQJMFDCaCT1kfUysZahVmdeV4xD6sOQomE1NuBzcBRKzV/aMsLzapzX61n9IEEoUhC+8DpQMntt3naH6zMeIaliHoCd6K9U7PIRiYIhrIXhBIJWAONM/K8EMg0EACNdK6F9gFYDimtjyWsIghBeBkp7ZMb7TOF2N5+mrrzsL6ALBwPqw5CcQTT8PLHVwN3kXpz5v3M5LYjWwxCwQTPC9sH0Czk3uS8a6XT/udPxN5K6kOz8FjQKoIQBB95gAELpjNl+lwLqKQ5SX+9PERRaCBBKJRgXjlPBr1Rz9tPa61lGiDJeTBbHyICCUKRBKw9p+tonrleDSDZb1aQsREV8yAUS9gCjKnScN0Bd2pamGYBQCSJyxdObXLmbGPfYhCKJZwOsE5qM2UAaQujzQ5bOtlfdjYLa0otZxVBCMI6UneT+2oglcnzEBtWMc9m/TEikCAUR9gyQB+vRRYAQGUhtsshmV4SGkgQSiUsZNYHct0B8N3k3kl9py6VdCXaO1PiKEUfSBDKJLxoIGsfkwt3qxxiVcRz/aJi+7aY0ECCUCLBN4t3fkrTejSTt3lciUttL1wtnfSu1ZEMDSQIZRLyXS/r6LIdirXemz82FTt8dRDKJGzt/14En312OydydebWfvq2wyCyxSAUSVg4gDq7Bm3BNDs7xmncb4F3ndLJ7gY70elj3xCEIHyQ8O6rB28JAbbNimtt3H+RjlYAwlcHoWyC+er+slsPRvDBbwDNE2PjZm/O/LvyruuyVhGEIGCrLeLnBi7g5ZSm15+lA0NKWEUQgvAytkZpWHfedjRI8x6XZL46NJAglEvIzwNZp7LmD7f17NFPtbaCTMTVQSiRgNx+015EvHRSv1n1Nht9IEEolODB9LmWxjrXq4Gsv5o67SHdueolE6ITNQiFEl7v8Hq8/9Uv7sqaUrPrvOI8kCAUS9ju8PKWJt93C2DTQKjTftP7vP0pfHUQyiWkO7xsjHbtgPTESKYq4p12Wwxsdm10KmYVQQjCnwhrQdz2fXWSpsXuW7TrvHA13z5VIsljmasIQhDSsB2Kfouoe2W0D+BK9tvNdPQXwlcHoVxCL7/DKw1zxY6v1vvqbGO5pNWZMyrmQSiT8HKH1+ARSHfnmkNeSM3UaQ92D/ghCumUhVJWEYQgpME/9Hn89Yg7vIJQHOF/Zj9gqbb0TBwAAAAASUVORK5CYII="/>
+      <div class="badge">UPI</div>
+    </div>
+    <div class="howto">Open any UPI app and scan this code, or tap your app below to pay <b>₹1,499</b>.</div>
+    <div class="apps">
+      <span class="appchip"><i style="background:#4285f4"></i>GPay</span>
+      <span class="appchip"><i style="background:#5f259f"></i>PhonePe</span>
+      <span class="appchip"><i style="background:#00baf2"></i>Paytm</span>
+      <span class="appchip"><i style="background:#00a651"></i>BHIM</span>
+    </div>
+    <div class="sep">or on mobile</div>
+    <button class="btn" onclick="alert('On a phone this opens your UPI app via the bhim_link / paytm_link')">Pay with UPI app</button>
+    <div class="status" id="status"><span class="spin"></span><span>Waiting for payment…</span></div>
+    <div class="foot">Do not close this page until payment is confirmed.</div>
+
+    <!-- success state -->
+    <div class="success" id="success">
+      <div class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#04210f" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+      <h2>Payment received</h2>
+      <div class="det">₹1,499 paid successfully</div>
+      <div class="utr">UTR · 435644746487</div>
+      <div class="det" style="margin-top:4px">Redirecting you back to the store…</div>
+    </div>
+  </section>
+</div>
+
+<div class="demo">
+  How it'll behave:
+  <button class="ok" onclick="document.getElementById('success').classList.add('show')">▶ Simulate payment success</button>
+  <button class="re" onclick="document.getElementById('success').classList.remove('show')">Reset</button>
+</div>
+
+<script>
+// countdown (purely cosmetic for the mockup)
+let t=598; const el=document.getElementById('timer');
+setInterval(()=>{ if(t>0){t--; const m=String(Math.floor(t/60)).padStart(2,'0'); const s=String(t%60).padStart(2,'0'); el.textContent=m+':'+s; }},1000);
+// In the real page, JS polls /api/payments/{order_id}/status every 4s and reveals
+// #success on status===SUCCESS, then redirects to the WooCommerce thank-you page.
+</script>
+</body>
+</html>
