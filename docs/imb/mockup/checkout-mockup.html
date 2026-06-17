@@ -1,12 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0f1620">
-<title>weewoo — Checkout</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1620"><title>weewoo — Checkout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>:root{--lime:#bee63c;}
 /* WeeWoo Pay (IMB) — premium responsive UPI checkout (matches weewoo.in). */
@@ -76,6 +72,22 @@
 
 .ww-hint{text-align:center;color:var(--ink-soft);font-size:clamp(12.5px,3.4vw,13.5px);line-height:1.55;margin:clamp(12px,3.5vw,16px) 6px 12px}
 
+/* ---- auto-rotating UPI app icons ---- */
+.ww-upiapps{display:flex;align-items:center;justify-content:center;gap:clamp(14px,5vw,22px);margin:2px 0 16px}
+.ww-upiapp{width:clamp(30px,8vw,36px);height:clamp(30px,8vw,36px);display:grid;place-items:center;
+  filter:grayscale(1);opacity:.4;transform:scale(.9);transition:filter .35s,opacity .35s,transform .35s;
+  animation:ww-upicycle 6s infinite}
+.ww-upiapp svg{width:100%;height:100%}
+.ww-upiapp:nth-child(1){animation-delay:0s}
+.ww-upiapp:nth-child(2){animation-delay:1.5s}
+.ww-upiapp:nth-child(3){animation-delay:3s}
+.ww-upiapp:nth-child(4){animation-delay:4.5s}
+@keyframes ww-upicycle{
+  0%,100%{filter:grayscale(1);opacity:.4;transform:scale(.9)}
+  8%,17%{filter:grayscale(0);opacity:1;transform:scale(1.18)}
+  25%{filter:grayscale(1);opacity:.4;transform:scale(.9)}
+}
+
 /* ---- compact download (secondary) ---- */
 .ww-dl{display:flex;align-items:center;justify-content:center;gap:7px;width:fit-content;margin:0 auto;
   background:#fff;color:var(--ink);border:1.5px solid var(--line);border-radius:999px;
@@ -138,83 +150,40 @@
 .ww-demo{position:fixed;z-index:80;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;background:rgba(15,22,32,.95);border:1px solid rgba(255,255,255,.12);padding:7px 9px 7px 13px;border-radius:999px;font-size:11.5px;color:#94a3b8}
 .ww-demo button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
 .ww-demo .ok{background:#bee63c;color:#0e1a05}.ww-demo .re{background:rgba(255,255,255,.1);color:#cbd5e1}
-</style>
-</head>
+</style></head>
 <body class="ww-imb-body">
 <div class="ww-sheet">
-  <div class="ww-head">
-    <span class="ww-vpill">⚡ Instant verification</span>
-    <div class="ww-amt"><span class="rs">₹</span>234.18</div>
-    <div class="ww-ord">Order #11032</div>
-  </div>
-
+  <div class="ww-head"><span class="ww-vpill">⚡ Instant verification</span><div class="ww-amt"><span class="rs">₹</span>234.18</div><div class="ww-ord">Order #11032</div></div>
   <div class="ww-bodyx">
-    <div class="ww-tabs" id="ww-tabs" data-active="scan">
-      <span class="ww-tab-ind"></span>
-      <button class="ww-tab active" data-pane="scan">Scan QR</button>
-      <button class="ww-tab" data-pane="how">How to pay</button>
-    </div>
-
+    <div class="ww-tabs" id="ww-tabs" data-active="scan"><span class="ww-tab-ind"></span>
+      <button class="ww-tab active" data-pane="scan">Scan QR</button><button class="ww-tab" data-pane="how">How to pay</button></div>
     <div class="ww-pane active" id="ww-pane-scan">
-      <div class="ww-qr-card">
-        <div id="ww-qr"><img alt="UPI QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhsAAAIbAQAAAABqXGEQAAAFVUlEQVR4nO2dXY7qOBCFT3WQ0m/0DoJ0FwI7I+xglhR2QnYAbyCRPvNQ5R9mRtM9ut09WDp+CiH5FEtlu1x1bBvx22V++X0GIIgggggiyLdCFktls5iZY+cVDm+03c1sE4/ezGwFADi+Ir/z+oVfIoggPwMBeceeJEkMd+z5DgAY7sD6HehJkuP6HdsrMMQlicHfmXry9DzVEUSQz0Mu0W13HC8vAMBTR84dJ8DMjHPcXYzneLOMDE9XHUEE+S+QxUYYSbpnQ9vdDMPd/+xpm472Bhxfv/1LBBHkxyAdbVhsB/BoNsbNeYXDQB7MeDSL4eC7v0QQQb4dsiZ5BQDs5xfvzDuOybcvvf2WHNOzHRnzgKerjiCCfAJy8KBMcnImwLY3Gy/u22+8MQAAFmO0i9nf2X3tlwgiyE9AVkBXMlYLABpgAID1YuhBLDj8Ef16R1yA7RUPWa7nqY4ggnwSsth4MdvdzKynDe8AwGPPEcYpgvXFoT+80XY+BhzeqLi9IC1CQJI8ew9OkmfzED4Z/g55z85/xO2Txx+XitsL0h5ksRGeed0sNq4Xs1fwhGTVKUt7XBPzCrh05BV+qbi9IA1D1p5yPa5wsBeXIeQclRfaLqWrXLJQB3WerTqCCPJBSdoD9D5LXWedAmCcegIdR7gXdOq8fVzza1vKyRGkOUjtuvMUwfrK4yfJO/bncP4f3HxpcgRpFOJStLPlFNQZRX9GTnADP1u+pN9FxxAyyOwFaQ3iPXjYL3P4Jmst0xgQtg7AL+vXZPaCNAYpUcvkuLiTcwL23q9nh57Md5PHb3JyBGkRUqa0ydYjFt+lxuCxzDKPRXj84frI7AVpD+K9fVlbEl18Tkz5XaBqAR71GUoLkNkL0hgEdaCmcmeYW0AK6sQYkD3+amR4nuoIIsinSnJc6lIMPErl0Ge1MaAprSCNQpB696ko6yNYDyCpb/aeowJQVth63FO+vSANQnIkZ+qZfHtea88mLyoEqvWF9Rpzmb0gLUIOQ47kAMBxTTNLK07SPHZL8rjKcfvTt3yJIIL8HOTykrbBCSkaSZfep81xjNPNgI6cQ5u/SjPh56uOIIJ8CFmMXGwfkhsA6KO3p+3pialLLB9czIbQn/kmCl/6JYII8jMQJEUCY3uos989IV0C8MkrIpqfp7/7syI5gjQJKQriko+derrrbnX4ZksCqGVrI5SuEqRJCKpIJOBd/Dapb96T2vih48+vATJ7QZqEZCnlFKKzWEuLYvYn5OVXp6w/y5IFmb0g7UHCySnKesbOrvfa3wnfvopa1mFNmb0gjUGKJofZoZ/8n1qRcPZnYziY0kbJSlcJ0iokRyJt03FMi8U7mu+I48XSBmmHN/i6245jbKLwXNURRJCPS56bXuvOHEC91X2SIxcpWi3lUW8vSGOQ2n7zvb5MXpFPeEgePyI1W/aGldkL0hikCI/LuSXV6qrJ71abKMCfBZAOQZHZC9IapJ6b5rW0RW08+UNJfTPEyBDvKpIjSJuQ7OSQzC0ADwlbZifHy8Ou9zJ7QdqEVCcVwhWYvvFl5GPzSYUpkpODOljrWAdBmoT87aTCEskB8Je9jQHUY8D+DE1pBWkXUk4qtLcI1ES6KpT180uR5zDp7XNq69mqI4gg/15WD7+WFdZnAOC8AcCX7fWV8687QBxfr5h/8WAA+qsNJwCLof+qLxFEkP8Vckwdf3TmftzJ/mIYbmmpIWZvMFpdJUiDkEffPkvRqtxtUqWlUomUlaUVpE1IWUkIpNVV2xLL3F7z8qsptkLzFuA6BaWrBGkSYvz4mY/K/DzVEUQQQQQR5B/LnwQBAEQNQvxOAAAAAElFTkSuQmCC"></div>
-        <div class="ww-qr-logo"><span class="w">wee</span><span class="o">woo</span></div>
-      </div>
-
+      <div class="ww-qr-card"><div id="ww-qr"><img alt="UPI QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhsAAAIbAQAAAABqXGEQAAAFVUlEQVR4nO2dXY7qOBCFT3WQ0m/0DoJ0FwI7I+xglhR2QnYAbyCRPvNQ5R9mRtM9ut09WDp+CiH5FEtlu1x1bBvx22V++X0GIIgggggiyLdCFktls5iZY+cVDm+03c1sE4/ezGwFADi+Ir/z+oVfIoggPwMBeceeJEkMd+z5DgAY7sD6HehJkuP6HdsrMMQlicHfmXry9DzVEUSQz0Mu0W13HC8vAMBTR84dJ8DMjHPcXYzneLOMDE9XHUEE+S+QxUYYSbpnQ9vdDMPd/+xpm472Bhxfv/1LBBHkxyAdbVhsB/BoNsbNeYXDQB7MeDSL4eC7v0QQQb4dsiZ5BQDs5xfvzDuOybcvvf2WHNOzHRnzgKerjiCCfAJy8KBMcnImwLY3Gy/u22+8MQAAFmO0i9nf2X3tlwgiyE9AVkBXMlYLABpgAID1YuhBLDj8Ef16R1yA7RUPWa7nqY4ggnwSsth4MdvdzKynDe8AwGPPEcYpgvXFoT+80XY+BhzeqLi9IC1CQJI8ew9OkmfzED4Z/g55z85/xO2Txx+XitsL0h5ksRGeed0sNq4Xs1fwhGTVKUt7XBPzCrh05BV+qbi9IA1D1p5yPa5wsBeXIeQclRfaLqWrXLJQB3WerTqCCPJBSdoD9D5LXWedAmCcegIdR7gXdOq8fVzza1vKyRGkOUjtuvMUwfrK4yfJO/bncP4f3HxpcgRpFOJStLPlFNQZRX9GTnADP1u+pN9FxxAyyOwFaQ3iPXjYL3P4Jmst0xgQtg7AL+vXZPaCNAYpUcvkuLiTcwL23q9nh57Md5PHb3JyBGkRUqa0ydYjFt+lxuCxzDKPRXj84frI7AVpD+K9fVlbEl18Tkz5XaBqAR71GUoLkNkL0hgEdaCmcmeYW0AK6sQYkD3+amR4nuoIIsinSnJc6lIMPErl0Ge1MaAprSCNQpB696ko6yNYDyCpb/aeowJQVth63FO+vSANQnIkZ+qZfHtea88mLyoEqvWF9Rpzmb0gLUIOQ47kAMBxTTNLK07SPHZL8rjKcfvTt3yJIIL8HOTykrbBCSkaSZfep81xjNPNgI6cQ5u/SjPh56uOIIJ8CFmMXGwfkhsA6KO3p+3pialLLB9czIbQn/kmCl/6JYII8jMQJEUCY3uos989IV0C8MkrIpqfp7/7syI5gjQJKQriko+derrrbnX4ZksCqGVrI5SuEqRJCKpIJOBd/Dapb96T2vih48+vATJ7QZqEZCnlFKKzWEuLYvYn5OVXp6w/y5IFmb0g7UHCySnKesbOrvfa3wnfvopa1mFNmb0gjUGKJofZoZ/8n1qRcPZnYziY0kbJSlcJ0iokRyJt03FMi8U7mu+I48XSBmmHN/i6245jbKLwXNURRJCPS56bXuvOHEC91X2SIxcpWi3lUW8vSGOQ2n7zvb5MXpFPeEgePyI1W/aGldkL0hikCI/LuSXV6qrJ71abKMCfBZAOQZHZC9IapJ6b5rW0RW08+UNJfTPEyBDvKpIjSJuQ7OSQzC0ADwlbZifHy8Ou9zJ7QdqEVCcVwhWYvvFl5GPzSYUpkpODOljrWAdBmoT87aTCEskB8Je9jQHUY8D+DE1pBWkXUk4qtLcI1ES6KpT180uR5zDp7XNq69mqI4gg/15WD7+WFdZnAOC8AcCX7fWV8687QBxfr5h/8WAA+qsNJwCLof+qLxFEkP8Vckwdf3TmftzJ/mIYbmmpIWZvMFpdJUiDkEffPkvRqtxtUqWlUomUlaUVpE1IWUkIpNVV2xLL3F7z8qsptkLzFuA6BaWrBGkSYvz4mY/K/DzVEUQQQQQR5B/LnwQBAEQNQvxOAAAAAElFTkSuQmCC"></div><div class="ww-qr-logo"><span class="w">wee</span><span class="o">woo</span></div></div>
       <p class="ww-hint">Scan with any UPI app. On mobile, tap Download and open the QR from your app's gallery.</p>
-
-      <button class="ww-dl" id="ww-dl">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
-        Download QR
-      </button>
-
-      <div class="ww-valid">
-        <span class="lbl">QR valid for</span>
-        <span class="track"><span class="fill" id="ww-fill"></span></span>
-        <span class="time" id="ww-time">10:00</span>
+      <div class="ww-upiapps">
+        <span class="ww-upiapp" title="Google Pay"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#e64a19" d="M42.858,11.975c-4.546-2.624-10.359-1.065-12.985,3.481L23.25,26.927c-1.916,3.312,0.551,4.47,3.301,6.119l6.372,3.678c2.158,1.245,4.914,0.506,6.158-1.649l6.807-11.789C48.176,19.325,46.819,14.262,42.858,11.975z"/><path fill="#fbc02d" d="M35.365,16.723l-6.372-3.678c-3.517-1.953-5.509-2.082-6.954,0.214l-9.398,16.275c-2.624,4.543-1.062,10.353,3.481,12.971c3.961,2.287,9.024,0.93,11.311-3.031l9.578-16.59C38.261,20.727,37.523,17.968,35.365,16.723z"/><path fill="#43a047" d="M36.591,8.356l-4.476-2.585c-4.95-2.857-11.28-1.163-14.137,3.787L9.457,24.317c-1.259,2.177-0.511,4.964,1.666,6.22l5.012,2.894c2.475,1.43,5.639,0.582,7.069-1.894l9.735-16.86c2.017-3.492,6.481-4.689,9.974-2.672L36.591,8.356z"/><path fill="#1e88e5" d="M19.189,13.781l-4.838-2.787c-2.158-1.242-4.914-0.506-6.158,1.646l-5.804,10.03c-2.857,4.936-1.163,11.252,3.787,14.101l3.683,2.121l4.467,2.573l1.939,1.115c-3.442-2.304-4.535-6.92-2.43-10.555l1.503-2.596l5.504-9.51C22.083,17.774,21.344,15.023,19.189,13.781z"/></svg></span>
+        <span class="ww-upiapp" title="Paytm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#0d47a1" d="M5.446 18.01H.548c-.277 0-.502.167-.503.502L0 30.519c-.001.3.196.45.465.45.735 0 1.335 0 2.07 0C2.79 30.969 3 30.844 3 30.594 3 29.483 3 28.111 3 27l2.126.009c1.399-.092 2.335-.742 2.725-2.052.117-.393.14-.733.14-1.137l.11-2.862C7.999 18.946 6.949 18.181 5.446 18.01zM4.995 23.465C4.995 23.759 4.754 24 4.461 24H3v-3h1.461c.293 0 .534.24.534.535V23.465zM13.938 18h-3.423c-.26 0-.483.08-.483.351 0 .706 0 1.495 0 2.201C10.06 20.846 10.263 21 10.552 21h2.855c.594 0 .532.972 0 1H11.84C10.101 22 9 23.562 9 25.137c0 .42.005 1.406 0 1.863-.008.651-.014 1.311.112 1.899C9.336 29.939 10.235 31 11.597 31h4.228c.541 0 1.173-.474 1.173-1.101v-8.274C17.026 19.443 15.942 18.117 13.938 18zM14 27.55c0 .248-.202.45-.448.45h-1.105C12.201 28 12 27.798 12 27.55v-2.101C12 25.202 12.201 25 12.447 25h1.105C13.798 25 14 25.202 14 25.449V27.55zM18 18.594v5.608c.124 1.6 1.608 2.798 3.171 2.798h1.414c.597 0 .561.969 0 .969H19.49c-.339 0-.462.177-.462.476v2.152c0 .226.183.396.422.396h2.959c2.416 0 3.592-1.159 3.591-3.757v-8.84c0-.276-.175-.383-.342-.383h-2.302c-.224 0-.355.243-.355.422v5.218c0 .199-.111.316-.29.316H21.41c-.264 0-.409-.143-.409-.396v-5.058C21 18.218 20.88 18 20.552 18c-.778 0-1.442 0-2.22 0C18.067 18 18 18.263 18 18.594z"/><path fill="#00adee" d="M27.038 20.569v-2.138c0-.237.194-.431.43-.431H28c1.368-.285 1.851-.62 2.688-1.522.514-.557.966-.704 1.298-.113L32 18h1.569C33.807 18 34 18.194 34 18.431v2.138C34 20.805 33.806 21 33.569 21H32v9.569C32 30.807 31.806 31 31.57 31h-2.14C29.193 31 29 30.807 29 30.569V21h-1.531C27.234 21 27.038 20.806 27.038 20.569zM42.991 30.465c0 .294-.244.535-.539.535h-1.91c-.297 0-.54-.241-.54-.535v-6.623-1.871c0-1.284-2.002-1.284-2.002 0v8.494C38 30.759 37.758 31 37.461 31H35.54C35.243 31 35 30.759 35 30.465V18.537C35 18.241 35.243 18 35.54 18h1.976c.297 0 .539.241.539.537v.292c1.32-1.266 3.302-.973 4.416.228 2.097-2.405 5.69-.262 5.523 2.375 0 2.916-.026 6.093-.026 9.033 0 .294-.244.535-.538.535h-1.891C45.242 31 45 30.759 45 30.465c0-2.786 0-5.701 0-8.44 0-1.307-2-1.37-2 0v8.44z"/></svg></span>
+        <span class="ww-upiapp" title="BHIM UPI"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><polygon fill="#388e3c" points="29,4 18,45 40,24"/><polygon fill="#f57c00" points="21,3 10,44 32,23"/></svg></span>
+        <span class="ww-upiapp" title="PhonePe"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20" fill="#5f259f"/><path fill="#fff" d="M33 18.4c0-.77-.63-1.4-1.4-1.4h-3.05l-2.5-2.86a1.78 1.78 0 0 0-1.5-.64l-2.2.3c-.36.05-.5.5-.22.74l2.66 2.32h-7.2a.7.7 0 0 0-.7.7v.93c0 .39.31.7.7.7h1.62v5.3c0 3.04 1.57 4.83 4.27 4.83.83 0 1.53-.1 2.36-.43v3.43c0 .96.78 1.74 1.74 1.74h1.3c.3 0 .54-.24.54-.54V21.2h2.43c.4 0 .64-.24.64-.64v-2.16zm-7.4 8.6c-.5.23-1.13.33-1.6.33-1.24 0-1.77-.63-1.77-2.03V19.9h3.37v7.1z"/></svg></span>
       </div>
-
+      <button class="ww-dl" id="ww-dl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg> Download QR</button>
+      <div class="ww-valid"><span class="lbl">QR valid for</span><span class="track"><span class="fill" id="ww-fill"></span></span><span class="time" id="ww-time">10:00</span></div>
       <div class="ww-autostatus" id="ww-status"><span class="ww-spin"></span> <span>Auto-checking your payment…</span></div>
-
-      <div class="ww-info">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-        <p><b>No need to do anything</b> — we check your payment automatically and confirm the moment it arrives. Keep this page open.</p>
-      </div>
+      <div class="ww-info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg><p><b>No need to do anything</b> — we check your payment automatically and confirm the moment it arrives. Keep this page open.</p></div>
     </div>
-
-    <div class="ww-pane" id="ww-pane-how">
-      <div class="ww-steps">
-        <div class="ww-step"><span class="n"></span><span class="t"><b>Open any UPI app</b><span>Google Pay, PhonePe, Paytm, or BHIM.</span></span></div>
-        <div class="ww-step"><span class="n"></span><span class="t"><b>Scan the QR code</b><span>Or tap "Download QR" and pick it from your gallery.</span></span></div>
-        <div class="ww-step"><span class="n"></span><span class="t"><b>Pay ₹234.18</b><span>Confirm the payment in your UPI app.</span></span></div>
-        <div class="ww-step"><span class="n"></span><span class="t"><b>Done — we verify automatically</b><span>No waiting and nothing to click. Just keep this page open.</span></span></div>
-      </div>
-    </div>
+    <div class="ww-pane" id="ww-pane-how"><div class="ww-steps">
+      <div class="ww-step"><span class="n"></span><span class="t"><b>Open any UPI app</b><span>Google Pay, PhonePe, Paytm, or BHIM.</span></span></div>
+      <div class="ww-step"><span class="n"></span><span class="t"><b>Scan the QR code</b><span>Or tap "Download QR" and pick it from your gallery.</span></span></div>
+      <div class="ww-step"><span class="n"></span><span class="t"><b>Pay ₹234.18</b><span>Confirm the payment in your UPI app.</span></span></div>
+      <div class="ww-step"><span class="n"></span><span class="t"><b>Done — we verify automatically</b><span>No waiting and nothing to click.</span></span></div>
+    </div></div>
   </div>
-
-  <div class="ww-success" id="ww-success">
-    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1a05" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
-    <h2>Payment verified</h2>
-    <p>Redirecting to your order…</p>
-  </div>
+  <div class="ww-success" id="ww-success"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1a05" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div><h2>Payment verified</h2><p>Redirecting to your order…</p></div>
 </div>
-
-<div class="ww-demo">Preview:
-  <button class="ok" onclick="document.getElementById('ww-success').classList.add('show')">▶ Simulate verified</button>
-  <button class="re" onclick="document.getElementById('ww-success').classList.remove('show')">Reset</button>
-</div>
-
+<div class="ww-demo">Preview:<button class="ok" onclick="document.getElementById('ww-success').classList.add('show')">▶ Simulate verified</button><button class="re" onclick="document.getElementById('ww-success').classList.remove('show')">Reset</button></div>
 <script>
-var tabs=document.getElementById('ww-tabs');
-tabs.querySelectorAll('.ww-tab').forEach(function(b){b.addEventListener('click',function(){
-  tabs.querySelectorAll('.ww-tab').forEach(function(t){t.classList.remove('active')});
-  document.querySelectorAll('.ww-pane').forEach(function(p){p.classList.remove('active')});
-  b.classList.add('active');var p=b.getAttribute('data-pane');
-  document.getElementById('ww-pane-'+p).classList.add('active');tabs.setAttribute('data-active',p);
-})});
-var t=600,fill=document.getElementById('ww-fill'),time=document.getElementById('ww-time');
-setInterval(function(){if(t>0){t--;time.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');fill.style.width=(t/600*100)+'%';}},1000);
+var tabs=document.getElementById('ww-tabs');tabs.querySelectorAll('.ww-tab').forEach(function(b){b.addEventListener('click',function(){tabs.querySelectorAll('.ww-tab').forEach(function(t){t.classList.remove('active')});document.querySelectorAll('.ww-pane').forEach(function(p){p.classList.remove('active')});b.classList.add('active');var p=b.getAttribute('data-pane');document.getElementById('ww-pane-'+p).classList.add('active');tabs.setAttribute('data-active',p);})});
+var t=600,fill=document.getElementById('ww-fill'),time=document.getElementById('ww-time');setInterval(function(){if(t>0){t--;time.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');fill.style.width=(t/600*100)+'%';}},1000);
 document.getElementById('ww-dl').addEventListener('click',function(){alert('Downloads the QR image so mobile users can scan it from their gallery.');});
 </script>
-</body>
-</html>
+</body></html>

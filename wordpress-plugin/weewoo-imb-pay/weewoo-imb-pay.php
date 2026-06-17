@@ -51,6 +51,11 @@ add_action('plugins_loaded', function () {
     }
     require_once WW_IMB_DIR . 'includes/class-ww-imb-gateway.php';
     WW_IMB_Endpoints::instance();
+
+    if (is_admin()) {
+        require_once WW_IMB_DIR . 'includes/class-ww-imb-admin.php';
+        WW_IMB_Admin::instance();
+    }
 });
 
 // Settings shortcut on the plugins screen.

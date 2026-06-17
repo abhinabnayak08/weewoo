@@ -97,6 +97,25 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * Persist an error so the dashboard can surface it (capped, newest first).
+     */
+    public static function log_error(string $context, string $message, int $order_id = 0): void
+    {
+        $log = get_option('ww_imb_error_log', []);
+        if (!is_array($log)) {
+            $log = [];
+        }
+        array_unshift($log, [
+            'time'     => current_time('mysql'),
+            'context'  => $context,
+            'message'  => $message,
+            'order_id' => $order_id,
+        ]);
+        update_option('ww_imb_error_log', array_slice($log, 0, 50), false);
+        self::log('ERROR [' . $context . '] ' . $message);
+    }
+
+    /**
      * Branded QR page URL for an order (guest-safe via order key).
      */
     public static function qr_page_url(WC_Order $order): string
@@ -136,6 +155,7 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         self::log('create-order ' . $imb_order_id . ' => ' . wp_json_encode($res));
 
         if (!$res['ok'] || empty($res['result'])) {
+            self::log_error('create-order', $res['message'], $order->get_id());
             wc_add_notice(
                 __('Could not start the payment. Please try again. ', 'weewoo-imb-pay') . esc_html($res['message']),
                 'error'
@@ -188,7 +208,7 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
             // Amount guard — never complete on a mismatched amount.
             if (isset($result['amount']) && is_numeric($result['amount'])) {
                 if (abs((float) $result['amount'] - (float) $order->get_total()) > 0.01) {
-                    self::log('AMOUNT MISMATCH for ' . $imb_order_id . ': imb=' . $result['amount'] . ' wc=' . $order->get_total());
+                    self::log_error('amount-mismatch', 'IMB=' . $result['amount'] . ' WC=' . $order->get_total(), $order->get_id());
                     $order->add_order_note(__('IMB reported a different amount than the order total — not auto-completing. Please verify manually.', 'weewoo-imb-pay'));
                     return WW_IMB_Client::STATUS_PENDING;
                 }
