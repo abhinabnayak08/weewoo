@@ -41,3 +41,19 @@ marks an order paid.
 
 Set `IMB_API_BASE` in `.env` (default `https://pay.imb.org.in`; alternates
 `https://api.imbpay.in/v2`, `https://api.imbx.in`). No code changes needed.
+
+## WooCommerce plugin (production path)
+
+For a live WooCommerce store, use the self-contained PHP gateway plugin at
+`wordpress-plugin/weewoo-imb-pay/` — no separate server required. It registers a
+**"WeeWoo Pay — IMB UPI"** payment method, shows our own branded QR page
+(`templates/qr-checkout.php`, same design as `docs/imb/mockup/`), and confirms
+payment via webhook **and** polling, both re-verified against
+`check-order-status` with an amount guard. Token is stored in the gateway
+settings (WooCommerce → Settings → Payments). Webhook URL to register in IMB:
+`https://YOURDOMAIN/?wc-api=weewoo_imb_webhook`.
+
+> Note: classic/shortcode checkout works out of the box. The new **block-based**
+> checkout needs a small JS payment-method integration (follow-up) for the method
+> to render there.
+
