@@ -75,14 +75,9 @@ $home       = home_url('/');
 
       <div class="ww-autostatus" id="ww-status"><span class="ww-spin"></span> <span><?php esc_html_e('Auto-checking your payment…', 'weewoo-imb-pay'); ?></span></div>
 
-      <button class="ww-btn ww-btn-lime" id="ww-verify">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-        <?php esc_html_e('I have completed payment', 'weewoo-imb-pay'); ?>
-      </button>
-
       <div class="ww-info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-        <p><b><?php esc_html_e('No need to do anything', 'weewoo-imb-pay'); ?></b> — <?php esc_html_e('we check your payment automatically and confirm the moment it arrives. Already paid? Tap the green button to confirm instantly.', 'weewoo-imb-pay'); ?></p>
+        <p><b><?php esc_html_e('No need to do anything', 'weewoo-imb-pay'); ?></b> — <?php esc_html_e('we check your payment automatically and confirm the moment it arrives. Keep this page open.', 'weewoo-imb-pay'); ?></p>
       </div>
     </div>
 
@@ -91,7 +86,7 @@ $home       = home_url('/');
         <div class="ww-step"><span class="n"></span><span class="t"><b><?php esc_html_e('Open any UPI app', 'weewoo-imb-pay'); ?></b><span><?php esc_html_e('Google Pay, PhonePe, Paytm, or BHIM.', 'weewoo-imb-pay'); ?></span></span></div>
         <div class="ww-step"><span class="n"></span><span class="t"><b><?php esc_html_e('Scan the QR code', 'weewoo-imb-pay'); ?></b><span><?php esc_html_e('Or tap "Download QR to pay" and pick it from your gallery.', 'weewoo-imb-pay'); ?></span></span></div>
         <div class="ww-step"><span class="n"></span><span class="t"><b><?php echo esc_html(sprintf(__('Pay %s', 'weewoo-imb-pay'), get_woocommerce_currency_symbol($order->get_currency()) . number_format((float) $order->get_total(), 2))); ?></b><span><?php esc_html_e('Confirm the payment in your UPI app.', 'weewoo-imb-pay'); ?></span></span></div>
-        <div class="ww-step"><span class="n"></span><span class="t"><b><?php esc_html_e('Done — we verify automatically', 'weewoo-imb-pay'); ?></b><span><?php esc_html_e('No waiting. You can also tap the green button to confirm now.', 'weewoo-imb-pay'); ?></span></span></div>
+        <div class="ww-step"><span class="n"></span><span class="t"><b><?php esc_html_e('Done — we verify automatically', 'weewoo-imb-pay'); ?></b><span><?php esc_html_e('No waiting and nothing to click. Just keep this page open.', 'weewoo-imb-pay'); ?></span></span></div>
       </div>
     </div>
   </div>

@@ -8,13 +8,12 @@
   var statusEl = document.getElementById('ww-status');
   var statusTxt = statusEl ? statusEl.querySelector('span:last-child') : null;
   var successEl = document.getElementById('ww-success');
-  var verifyBtn = document.getElementById('ww-verify');
 
   /* ---- 1. Render IMB's UPI link (bhim_link) as our QR ---- */
   if (holder && cfg.bhim && typeof window.QRCode !== 'undefined') {
     try {
       new window.QRCode(holder, {
-        text: cfg.bhim, width: 230, height: 230,
+        text: cfg.bhim, width: 196, height: 196,
         correctLevel: window.QRCode.CorrectLevel.H
       });
     } catch (e) { fallbackQr(); }
@@ -105,22 +104,9 @@
     check().then(function (finished) {
       if (finished || done) return;
       if (tries < MAX) setTimeout(poll, cfg.pollInterval || 4000);
-      else setStatus('Stopped checking. Tap the button below to verify.', '');
+      else setStatus('Still waiting — refresh the page to keep checking.', '');
     });
   }
 
-  // Manual "I have completed payment" — immediate check.
-  if (verifyBtn) {
-    verifyBtn.addEventListener('click', function () {
-      if (done) return;
-      setStatus('Verifying your payment…', '');
-      verifyBtn.disabled = true;
-      check().then(function (finished) {
-        verifyBtn.disabled = false;
-        if (!finished && !done) setStatus("Not received yet — we'll keep checking automatically.", '');
-      });
-    });
-  }
-
-  setTimeout(poll, cfg.pollInterval || 4000); // auto-verify starts on its own
+  setTimeout(poll, cfg.pollInterval || 4000); // auto-verify starts on its own, no click needed
 })();
