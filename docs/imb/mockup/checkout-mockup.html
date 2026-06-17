@@ -79,6 +79,11 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif
 .step .t b{display:block;font-size:14.5px;font-weight:700;color:var(--ink)}
 .step .t span{font-size:13px;color:var(--ink-soft)}
 
+
+.autostatus{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13.5px;font-weight:700;color:var(--ink-soft);margin-bottom:12px}
+.spin{width:15px;height:15px;border:2px solid #d7dce2;border-top-color:var(--lime-2);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* success */
 .success{position:fixed;inset:0;max-width:480px;margin:0 auto;background:rgba(255,255,255,.98);z-index:50;
   display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px;text-align:center}
@@ -132,7 +137,7 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif
         <span class="time" id="time">9:48</span>
       </div>
 
-      <div class="verify-hint">After paying, tap the button to verify instantly ⚡</div>
+      <div class="autostatus" id="autostatus"><span class="spin"></span> Auto-checking your payment…</div>
 
       <button class="btn btn-lime" id="verify">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
@@ -141,7 +146,7 @@ body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif
 
       <div class="info">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
-        <p><b>Already paid?</b> Tap the green "I have completed payment" button — we check your payment and confirm it instantly. No waiting needed.</p>
+        <p><b>No need to do anything</b> — we check your payment automatically and confirm the moment it arrives. Already paid? Tap the green button to confirm instantly.</p>
       </div>
     </div>
 

@@ -149,9 +149,10 @@ final class WW_IMB_Endpoints
                 ['action' => 'ww_imb_status', 'order_id' => $order->get_id(), 'key' => $order->get_order_key()],
                 admin_url('admin-ajax.php')
             ),
-            'bhim'         => (string) $order->get_meta('_ww_imb_bhim'),
-            'paymentUrl'   => (string) $order->get_meta('_ww_imb_payurl'),
-            'pollInterval' => 4000,
+            'bhim'           => (string) $order->get_meta('_ww_imb_bhim'),
+            'paymentUrl'     => (string) $order->get_meta('_ww_imb_payurl'),
+            'pollInterval'   => 4000,
+            'expirySeconds'  => (int) apply_filters('ww_imb_qr_expiry_seconds', 600),
         ]);
     }
 
