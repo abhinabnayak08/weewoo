@@ -34,6 +34,22 @@ def test_normalize_pending_default():
     assert g.normalize_status({}) == g.STATUS_PENDING
 
 
+def test_normalize_bare_toplevel_success_is_not_paid():
+    # CRITICAL: top-level status is the API-call flag, not the txn state.
+    # A bare "success" with a PENDING transaction must NOT be treated as paid.
+    body = {"status": "success", "message": "ok", "result": {"txnStatus": "PENDING"}}
+    assert g.normalize_status(body) == g.STATUS_PENDING
+
+
+def test_normalize_bare_toplevel_true_is_not_paid():
+    assert g.normalize_status({"status": True, "result": {"txnStatus": "Pending"}}) == g.STATUS_PENDING
+
+
+def test_normalize_unambiguous_toplevel_completed_is_paid():
+    # When there's no nested result, an unambiguous COMPLETED token still counts.
+    assert g.normalize_status({"status": "COMPLETED"}) == g.STATUS_SUCCESS
+
+
 # --- order id + qr ----------------------------------------------------------
 
 def test_generate_order_id_unique_and_numeric():

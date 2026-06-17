@@ -87,11 +87,20 @@ from it and overridable via filters.
   `result.{txnStatus, amount, utr, ...}`. Paid iff `status==SUCCESS` AND
   `result.txnStatus==COMPLETED` — but see §5: we **re-verify** before trusting it.
 
-### Status normalization (`WW_IMB_Client::normalize_status`)
-- `SUCCESS` if any of top `status` / `result.status` / `result.txnStatus` ∈
-  {COMPLETED, SUCCESS, PAID} (case-insensitive).
-- `FAILED` if ∈ {FAILED, FAILURE, EXPIRED, CANCELLED, CANCELED, DECLINED}.
+### Status normalization (`WW_IMB_Client::normalize_status`) — hardened
+Top-level `status` is the **API-call flag** in this API (true/"false"/"success"),
+NOT the transaction state. So:
+- `SUCCESS`/`FAILED` are decided from the **nested** `result.txnStatus` /
+  `result.status` only (∈ {COMPLETED,SUCCESS,PAID} / {FAILED,FAILURE,EXPIRED,
+  CANCELLED,CANCELED,DECLINED}).
+- Top-level `status` is honoured **only** for unambiguous transaction tokens
+  (`COMPLETED`/`PAID` for success; the failure tokens) — a bare top-level
+  `success`/`true`/`ok` will **not** complete an order.
 - else `PENDING`.
+- **Amount is mandatory to complete:** `confirm_payment()` will not call
+  `payment_complete()` on a SUCCESS that lacks a parseable, matching `result.amount`
+  (filter `ww_imb_require_amount`, default true). This is the backstop if the
+  status semantics ever differ.
 
 ---
 

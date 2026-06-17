@@ -75,22 +75,32 @@ def generate_order_id() -> str:
 
 
 def normalize_status(payload: dict[str, Any]) -> str:
-    """Map IMB's various status fields to one of our internal states."""
-    candidates: list[str] = []
-    top = payload.get("status")
-    if isinstance(top, str):
-        candidates.append(top)
-    result = payload.get("result")
-    if isinstance(result, dict):
-        for key in ("status", "txnStatus"):
-            val = result.get(key)
-            if isinstance(val, str):
-                candidates.append(val)
+    """Map IMB's status fields to one internal state.
 
-    upper = {c.strip().upper() for c in candidates if c}
-    if upper & _SUCCESS_TOKENS:
+    Top-level ``status`` in this API is the API-call flag (true/"false"/"success"),
+    not the transaction state, so only the nested ``result.txnStatus`` /
+    ``result.status`` are authoritative for payment state. The top-level field is
+    honoured only for unambiguous transaction tokens (e.g. COMPLETED/EXPIRED),
+    never a bare success/true/ok — which would falsely mark an unpaid order paid.
+    """
+    result = payload.get("result")
+    nested = set()
+    if isinstance(result, dict):
+        for key in ("txnStatus", "status"):
+            val = result.get(key)
+            if isinstance(val, str) and val.strip():
+                nested.add(val.strip().upper())
+
+    if nested & _SUCCESS_TOKENS:
         return STATUS_SUCCESS
-    if upper & _FAILED_TOKENS:
+    if nested & _FAILED_TOKENS:
+        return STATUS_FAILED
+
+    top = payload.get("status")
+    top = top.strip().upper() if isinstance(top, str) else ""
+    if top in {"COMPLETED", "PAID"}:  # deliberately excludes ambiguous SUCCESS/TRUE/OK
+        return STATUS_SUCCESS
+    if top in _FAILED_TOKENS:
         return STATUS_FAILED
     return STATUS_PENDING
 

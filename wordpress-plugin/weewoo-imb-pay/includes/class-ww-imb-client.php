@@ -121,32 +121,46 @@ final class WW_IMB_Client
     }
 
     /**
-     * Map IMB's various status fields to one internal state.
+     * Map IMB's status fields to one internal state.
+     *
+     * IMPORTANT: in this API the **top-level** `status` is the API-call flag
+     * (`true` / `"false"` / `"success"`), NOT the transaction state. So we treat
+     * only the nested `result.txnStatus` / `result.status` as authoritative for
+     * payment state. The top-level field is honoured only when it is an
+     * UNAMBIGUOUS transaction token (e.g. `COMPLETED`/`EXPIRED`) — never a bare
+     * `success`/`true`/`ok`, which would otherwise mark an unpaid order as paid.
      */
     public function normalize_status(?array $payload): string
     {
         if (!is_array($payload)) {
             return self::STATUS_PENDING;
         }
-        $candidates = [];
-        if (isset($payload['status']) && is_string($payload['status'])) {
-            $candidates[] = $payload['status'];
-        }
-        $result = $payload['result'] ?? null;
-        if (is_array($result)) {
-            foreach (['status', 'txnStatus'] as $k) {
-                if (isset($result[$k]) && is_string($result[$k])) {
-                    $candidates[] = $result[$k];
-                }
+
+        // Authoritative: nested transaction status fields only.
+        $result = (isset($payload['result']) && is_array($payload['result'])) ? $payload['result'] : [];
+        $nested = [];
+        foreach (['txnStatus', 'status'] as $k) {
+            if (isset($result[$k]) && is_string($result[$k])) {
+                $nested[] = strtoupper(trim($result[$k]));
             }
         }
-        $upper = array_map(static fn($c) => strtoupper(trim((string) $c)), $candidates);
-        if (array_intersect($upper, self::SUCCESS_TOKENS)) {
+        if (array_intersect($nested, self::SUCCESS_TOKENS)) {
             return self::STATUS_SUCCESS;
         }
-        if (array_intersect($upper, self::FAILED_TOKENS)) {
+        if (array_intersect($nested, self::FAILED_TOKENS)) {
             return self::STATUS_FAILED;
         }
+
+        // Fallback to top-level only for unambiguous transaction tokens.
+        $top = (isset($payload['status']) && is_string($payload['status'])) ? strtoupper(trim($payload['status'])) : '';
+        $top_success = ['COMPLETED', 'PAID']; // deliberately excludes ambiguous SUCCESS/TRUE/OK
+        if (in_array($top, $top_success, true)) {
+            return self::STATUS_SUCCESS;
+        }
+        if (in_array($top, self::FAILED_TOKENS, true)) {
+            return self::STATUS_FAILED;
+        }
+
         return self::STATUS_PENDING;
     }
 

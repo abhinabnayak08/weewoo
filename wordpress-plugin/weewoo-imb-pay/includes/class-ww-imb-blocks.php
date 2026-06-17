@@ -25,7 +25,8 @@ final class WW_IMB_Blocks extends AbstractPaymentMethodType
 
     public function is_active(): bool
     {
-        return ($this->settings['enabled'] ?? 'no') === 'yes';
+        return ($this->settings['enabled'] ?? 'no') === 'yes'
+            && trim((string) ($this->settings['user_token'] ?? '')) !== '';
     }
 
     public function get_payment_method_script_handles(): array

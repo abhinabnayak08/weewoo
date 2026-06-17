@@ -61,7 +61,7 @@ final class WW_IMB_Endpoints
 
         $client = WW_IMB_Gateway::make_client();
         $event  = $client->parse_webhook(is_array($payload) ? $payload : []);
-        WW_IMB_Gateway::log('webhook => ' . wp_json_encode($event));
+        WW_IMB_Gateway::log('webhook => ' . WW_IMB_Gateway::redact_for_log($event));
 
         if ($event['order_id'] === '') {
             $this->respond_200('NO_ORDER_ID');
@@ -162,10 +162,12 @@ final class WW_IMB_Endpoints
     {
         wp_enqueue_style('ww-imb-checkout', WW_IMB_URL . 'assets/css/checkout.css', [], WW_IMB_VERSION);
 
-        // QR rendered client-side from the UPI string (qrcodejs).
+        // QR rendered client-side from the UPI string (qrcodejs). jsdelivr tends
+        // to be more reliably reachable in India than cdnjs; overridable via
+        // filter, and checkout.js falls back to the payment link if it's blocked.
         wp_enqueue_script(
             'ww-imb-qrcode',
-            'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+            (string) apply_filters('ww_imb_qrcode_lib_url', 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js'),
             [],
             '1.0.0',
             true

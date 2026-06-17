@@ -33,6 +33,21 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
     }
 
+    /**
+     * Hide the method at checkout when it can't actually take a payment
+     * (disabled or no API token) — avoids every order failing at create-order.
+     */
+    public function is_available(): bool
+    {
+        if ('yes' !== $this->get_option('enabled')) {
+            return false;
+        }
+        if (trim((string) $this->get_option('user_token')) === '') {
+            return false;
+        }
+        return parent::is_available();
+    }
+
     public function init_form_fields(): void
     {
         $this->form_fields = [
@@ -108,6 +123,18 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         );
     }
 
+    /**
+     * Mask PII (mobile / UTR digits) before writing an IMB body to the logs.
+     */
+    public static function redact_for_log($data): string
+    {
+        $json = is_string($data) ? $data : wp_json_encode($data);
+        // Keep first 6 digits of any 10+ digit run, mask the rest (mobile, UTR).
+        return (string) preg_replace_callback('/\d{10,}/', static function ($m) {
+            return substr($m[0], 0, 6) . str_repeat('*', strlen($m[0]) - 6);
+        }, (string) $json);
+    }
+
     public static function log(string $message): void
     {
         $opts = get_option('woocommerce_' . self::GATEWAY_ID . '_settings', []);
@@ -155,6 +182,21 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
             return ['result' => 'failure'];
         }
 
+        // Reuse a recent, still-valid IMB order if the customer is retrying the
+        // same pending order. Prevents orphaning a paid IMB order and avoids the
+        // "Order_id Already Exist" error from re-creating it.
+        $existing = (string) $order->get_meta('_ww_imb_order_id');
+        $created  = (int) $order->get_meta('_ww_imb_created');
+        $ttl      = (int) apply_filters('ww_imb_qr_expiry_seconds', 600);
+        if (
+            $existing !== ''
+            && (string) $order->get_meta('_ww_imb_bhim') !== ''
+            && $order->has_status('pending')
+            && (time() - $created) < $ttl
+        ) {
+            return ['result' => 'success', 'redirect' => self::qr_page_url($order)];
+        }
+
         $mobile = preg_replace('/\D+/', '', (string) $order->get_billing_phone());
         if (strlen($mobile) > 10) {
             $mobile = substr($mobile, -10);
@@ -200,6 +242,7 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         $order->update_meta_data('_ww_imb_phonepe', (string) ($result['phonepe_link'] ?? ''));
         $order->update_meta_data('_ww_imb_payurl', (string) ($result['payment_url'] ?? ''));
         $order->update_meta_data('_ww_imb_check', (string) ($result['check_link'] ?? ''));
+        $order->update_meta_data('_ww_imb_created', time());
         $order->update_status('pending', __('Awaiting UPI payment via IMB.', 'weewoo-imb-pay'));
         $order->save();
 
@@ -234,13 +277,13 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         if (get_transient($lock)) {
             return WW_IMB_Client::STATUS_PENDING; // another request is verifying; poll again
         }
-        set_transient($lock, 1, 20);
+        set_transient($lock, 1, 60); // must exceed worst-case check_order_status latency (2×25s)
 
         try {
             $client = self::make_client();
             $body   = $client->check_order_status($imb_order_id);
             $status = $client->normalize_status($body);
-            self::log('confirm ' . $imb_order_id . ' => ' . $status . ' ' . wp_json_encode($body));
+            self::log('confirm ' . $imb_order_id . ' => ' . $status . ' ' . self::redact_for_log($body));
 
             // Re-read fresh in case another process completed it meanwhile.
             $fresh = wc_get_order($order->get_id());
@@ -251,13 +294,18 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
             if ($status === WW_IMB_Client::STATUS_SUCCESS) {
                 $result = is_array($body['result'] ?? null) ? $body['result'] : [];
 
-                // Amount guard — never complete on a mismatched amount.
-                if (isset($result['amount']) && is_numeric($result['amount'])) {
-                    if (abs((float) $result['amount'] - (float) $order->get_total()) > 0.01) {
-                        self::log_error('amount-mismatch', 'IMB=' . $result['amount'] . ' WC=' . $order->get_total(), $order->get_id());
-                        $order->add_order_note(__('IMB reported a different amount than the order total — not auto-completing. Please verify manually.', 'weewoo-imb-pay'));
-                        return WW_IMB_Client::STATUS_PENDING;
-                    }
+                // Amount verification is mandatory before completing. If IMB
+                // reports SUCCESS but the amount is missing or mismatched, do NOT
+                // auto-complete — stay pending and let polling/cron re-check.
+                $has_amount = isset($result['amount']) && is_numeric($result['amount']);
+                if ($has_amount && abs((float) $result['amount'] - (float) $order->get_total()) > 0.01) {
+                    self::log_error('amount-mismatch', 'IMB=' . $result['amount'] . ' WC=' . $order->get_total(), $order->get_id());
+                    $order->add_order_note(__('IMB reported a different amount than the order total — not auto-completing. Please verify manually.', 'weewoo-imb-pay'));
+                    return WW_IMB_Client::STATUS_PENDING;
+                }
+                if (!$has_amount && apply_filters('ww_imb_require_amount', true)) {
+                    self::log_error('no-amount', 'check-order-status returned SUCCESS without a parseable amount; not auto-completing.', $order->get_id());
+                    return WW_IMB_Client::STATUS_PENDING;
                 }
 
                 $utr = (string) ($result['utr'] ?? '');
