@@ -45,8 +45,8 @@ class IMBError(RuntimeError):
 @dataclass(frozen=True)
 class IMBConfig:
     user_token: str
-    api_base: str = "https://pay.imb.org.in"
-    redirect_url: str = "https://pay.imb.org.in"
+    api_base: str = "https://api.imbpay.in"
+    redirect_url: str = "https://api.imbpay.in"
     timeout: float = 20.0
 
     @classmethod
@@ -57,7 +57,7 @@ class IMBConfig:
                 "IMB_USER_TOKEN is not set. Add it to backend/.env "
                 "(see backend/.env.example)."
             )
-        base = os.environ.get("IMB_API_BASE", "https://pay.imb.org.in").strip().rstrip("/")
+        base = os.environ.get("IMB_API_BASE", "https://api.imbpay.in").strip().rstrip("/")
         redirect = os.environ.get("IMB_REDIRECT_URL", base).strip()
         timeout = float(os.environ.get("IMB_HTTP_TIMEOUT", "20"))
         return cls(user_token=token, api_base=base, redirect_url=redirect, timeout=timeout)

@@ -39,8 +39,10 @@ marks an order paid.
 
 ## Switching IMB hosts
 
-Set `IMB_API_BASE` in `.env` (default `https://pay.imb.org.in`; alternates
-`https://api.imbpay.in/v2`, `https://api.imbx.in`). No code changes needed.
+Set `IMB_API_BASE` in `.env` (default `https://api.imbpay.in` — IMB's current
+recommended host, which fixes QR/Airtel issues). Legacy hosts
+`https://pay.imb.org.in` and `https://secure-stage.imb.org.in` are deprecated.
+No code changes needed to switch.
 
 ## WooCommerce plugin (production path)
 

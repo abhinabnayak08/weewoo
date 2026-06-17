@@ -10,15 +10,14 @@ fetching, so this file is the source of truth checked into the repo.
 
 ## Hosts
 
-IMB exposes the same scheme under a few hosts depending on the account / product:
-
 | Host | Notes |
 | --- | --- |
-| `https://pay.imb.org.in` | Primary host used by this integration (default `IMB_API_BASE`). |
-| `https://api.imbpay.in/v2` | Alternate "v2" host, same form fields for create-order. |
-| `https://api.imbx.in` | Exposes `create-qr-code` (API-Key auth variant). |
+| `https://api.imbpay.in` | **Current recommended host** (default `IMB_API_BASE`). Per IMB's notice, fixes QR-generation / Airtel-network payment issues. Endpoints: `/api/create-order`, `/api/check-order-status`. |
+| `https://pay.imb.org.in` | Legacy host (deprecated). |
+| `https://secure-stage.imb.org.in` | Legacy staging host (deprecated). |
 
-All of the above are configurable via `IMB_API_BASE`; switch hosts without code changes.
+The host is configurable via `IMB_API_BASE` (backend) or the gateway settings
+(WooCommerce); switch hosts without code changes. Endpoint paths are unchanged.
 
 ---
 

@@ -26,7 +26,7 @@ final class WW_IMB_Client
     private string $user_token;
     private string $api_base;
 
-    public function __construct(string $user_token, string $api_base = 'https://pay.imb.org.in')
+    public function __construct(string $user_token, string $api_base = 'https://api.imbpay.in')
     {
         $this->user_token = trim($user_token);
         $this->api_base   = rtrim(trim($api_base), '/');

@@ -63,8 +63,8 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
             'api_base' => [
                 'title'       => __('IMB API Base URL', 'weewoo-imb-pay'),
                 'type'        => 'text',
-                'description' => __('Default works for most accounts. Alternatives: https://api.imbpay.in/v2', 'weewoo-imb-pay'),
-                'default'     => 'https://pay.imb.org.in',
+                'description' => __('Current recommended host (fixes QR/Airtel issues). Legacy: https://pay.imb.org.in', 'weewoo-imb-pay'),
+                'default'     => 'https://api.imbpay.in',
             ],
             'debug' => [
                 'title'   => __('Debug logging', 'weewoo-imb-pay'),
@@ -83,7 +83,7 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         $opts = get_option('woocommerce_' . self::GATEWAY_ID . '_settings', []);
         return new WW_IMB_Client(
             (string) ($opts['user_token'] ?? ''),
-            (string) ($opts['api_base'] ?? 'https://pay.imb.org.in')
+            (string) ($opts['api_base'] ?? 'https://api.imbpay.in')
         );
     }
 
