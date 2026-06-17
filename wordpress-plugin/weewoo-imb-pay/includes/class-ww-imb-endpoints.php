@@ -64,20 +64,48 @@ final class WW_IMB_Endpoints
         WW_IMB_Gateway::log('webhook => ' . wp_json_encode($event));
 
         if ($event['order_id'] === '') {
-            status_header(200);
-            echo 'NO_ORDER_ID';
-            exit;
+            $this->respond_200('NO_ORDER_ID');
         }
 
         $order = $this->find_order_by_imb_id($event['order_id']);
-        if ($order instanceof WC_Order) {
-            // Idempotent + authoritative re-verification happens inside confirm_payment().
-            WW_IMB_Gateway::confirm_payment($order);
+        if (!$order instanceof WC_Order) {
+            $this->respond_200('IGNORED'); // unknown order — ack so IMB doesn't retry forever
         }
 
-        status_header(200);
-        echo 'OK';
+        // Per IMB's Callback Report guidance: acknowledge with 200 FAST, then do
+        // the heavy work (outbound check-order-status verification) after the
+        // response is flushed — so the gateway never sees a slow/failed delivery.
+        $order_id = $order->get_id();
+        $this->respond_200('OK', false); // send 200 but don't exit yet
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
+        // Authoritative, idempotent re-verification (never trusts payload alone).
+        $fresh = wc_get_order($order_id);
+        if ($fresh instanceof WC_Order) {
+            WW_IMB_Gateway::confirm_payment($fresh);
+        }
         exit;
+    }
+
+    /**
+     * Send a quick HTTP 200 acknowledgement to the gateway.
+     */
+    private function respond_200(string $body, bool $exit = true): void
+    {
+        if (!headers_sent()) {
+            status_header(200);
+            nocache_headers();
+        }
+        echo esc_html($body);
+        // Flush output buffers so the body is on the wire immediately.
+        if (function_exists('wp_ob_end_flush_all')) {
+            wp_ob_end_flush_all();
+        }
+        flush();
+        if ($exit) {
+            exit;
+        }
     }
 
     public function ajax_status(): void

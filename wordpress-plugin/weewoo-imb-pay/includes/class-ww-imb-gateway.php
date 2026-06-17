@@ -76,6 +76,27 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * Safety-net reconciler (wp-cron): re-check recent unpaid orders against IMB
+     * so payments still complete even if both the webhook and the on-page poll
+     * were missed (e.g. customer closed the tab and a webhook delivery failed).
+     */
+    public static function reconcile_pending(): void
+    {
+        if (!function_exists('wc_get_orders')) {
+            return;
+        }
+        $orders = wc_get_orders([
+            'payment_method' => self::GATEWAY_ID,
+            'status'         => ['pending', 'on-hold'],
+            'limit'          => 50,
+            'date_created'   => '>' . (time() - DAY_IN_SECONDS),
+        ]);
+        foreach ($orders as $order) {
+            self::confirm_payment($order);
+        }
+    }
+
+    /**
      * Build a client from the saved settings (usable from static contexts).
      */
     public static function make_client(): WW_IMB_Client

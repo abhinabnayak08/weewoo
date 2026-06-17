@@ -62,9 +62,34 @@ add_action('plugins_loaded', function () {
     require_once WW_IMB_DIR . 'includes/class-ww-imb-gateway.php';
     WW_IMB_Endpoints::instance();
 
+    // Safety-net reconciler runs on our cron schedule.
+    add_action('ww_imb_reconcile', ['WW_IMB_Gateway', 'reconcile_pending']);
+
     if (is_admin()) {
         require_once WW_IMB_DIR . 'includes/class-ww-imb-admin.php';
         WW_IMB_Admin::instance();
+    }
+});
+
+// Custom 5-minute cron interval for the reconciler.
+add_filter('cron_schedules', function (array $s): array {
+    $s['ww_imb_5min'] = ['interval' => 300, 'display' => 'Every 5 minutes (WeeWoo Pay)'];
+    return $s;
+});
+
+// Schedule/unschedule the reconciler on activation/deactivation.
+register_activation_hook(__FILE__, function () {
+    if (!wp_next_scheduled('ww_imb_reconcile')) {
+        wp_schedule_event(time() + 300, 'ww_imb_5min', 'ww_imb_reconcile');
+    }
+});
+register_deactivation_hook(__FILE__, function () {
+    wp_clear_scheduled_hook('ww_imb_reconcile');
+});
+// Self-heal: ensure the event exists even if activation hook was missed.
+add_action('init', function () {
+    if (!wp_next_scheduled('ww_imb_reconcile')) {
+        wp_schedule_event(time() + 300, 'ww_imb_5min', 'ww_imb_reconcile');
     }
 });
 
