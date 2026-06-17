@@ -3,177 +3,193 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0f1c">
-<title>WeeWoo Store — Secure Payment</title>
+<meta name="theme-color" content="#0f1620">
+<title>weewoo — Checkout</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --primary:#10B981; --primary-2:#059669; --primary-soft:rgba(16,185,129,.18);
-  --bg-1:#060912; --bg-2:#0a0f1c; --bg-3:#0e1629;
-  --card:rgba(255,255,255,.96); --card-line:rgba(15,23,42,.08);
+  --lime:#bee63c; --lime-2:#a9d62f; --lime-soft:rgba(190,230,60,.14);
+  --dark:#0f1620; --dark-2:#162030;
   --ink:#0f172a; --ink-soft:#475569; --ink-muted:#94a3b8;
-  --danger:#ef4444; --success:#10B981;
+  --line:#e8ebef; --track:#eef0f2; --danger:#ef4444;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;width:100%}
-body{
-  font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;
-  min-height:100vh;min-height:100svh;color:#fff;
-  background:
-    radial-gradient(1200px 600px at 20% -10%,rgba(16,185,129,.22),transparent 60%),
-    radial-gradient(900px 500px at 110% 10%,rgba(139,92,246,.18),transparent 55%),
-    radial-gradient(800px 500px at 50% 110%,rgba(6,182,212,.16),transparent 60%),
-    linear-gradient(180deg,var(--bg-1) 0%,var(--bg-2) 60%,var(--bg-3) 100%);
-  display:flex;align-items:center;justify-content:center;
-  padding:24px 16px;position:relative;overflow:hidden;
-}
-.orbs{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:floaty 22s ease-in-out infinite}
-.orb.a{width:520px;height:520px;background:var(--primary);top:-180px;right:-160px}
-.orb.b{width:420px;height:420px;background:#8B5CF6;bottom:-160px;left:-140px;animation-delay:-7s}
-.orb.c{width:360px;height:360px;background:#06b6d4;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-12s}
-@keyframes floaty{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(28px,-24px) scale(1.06)}66%{transform:translate(-22px,18px) scale(.96)}}
+body{font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:#eceff3;color:var(--ink);min-height:100vh}
+.sheet{max-width:480px;margin:0 auto;background:#fff;min-height:100vh;position:relative;box-shadow:0 0 60px rgba(0,0,0,.12)}
 
-.stage{width:100%;max-width:440px;position:relative;z-index:10}
-.brand{text-align:center;margin-bottom:20px;color:#fff;letter-spacing:-.5px;font-weight:800;font-size:20px;text-shadow:0 2px 24px rgba(0,0,0,.35)}
-.brand .dot{display:inline-block;width:8px;height:8px;background:var(--primary);border-radius:50%;margin-right:10px;vertical-align:middle;box-shadow:0 0 20px var(--primary)}
+/* dark header */
+.head{position:relative;background:radial-gradient(420px 200px at 100% -20%,rgba(190,230,60,.18),transparent 60%),linear-gradient(180deg,#11192a,var(--dark));
+  color:#fff;padding:22px 22px 26px;overflow:hidden}
+.head .verify-pill{position:absolute;top:16px;right:18px;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+  color:var(--lime);background:var(--lime-soft);border:1px solid rgba(190,230,60,.35);padding:6px 12px;border-radius:999px}
+.head .amt{font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin-top:26px}
+.head .amt .rs{color:var(--lime);margin-right:2px}
+.head .ord{position:absolute;right:22px;bottom:26px;font-size:13px;font-weight:600;color:#94a3b8}
 
-.card{position:relative;background:var(--card);border-radius:28px;padding:30px 26px;
-  box-shadow:0 30px 60px -20px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.7);
-  animation:cardIn .55s cubic-bezier(.16,1,.3,1)}
-.card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
-  background:linear-gradient(180deg,rgba(255,255,255,.5),transparent 40%);mix-blend-mode:overlay;opacity:.8}
-@keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* body */
+.body{padding:18px 18px 28px}
+.tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:#f1f3f5;border-radius:14px;padding:6px;margin-bottom:20px}
+.tab{position:relative;z-index:2;border:0;background:transparent;font:inherit;font-weight:700;font-size:14.5px;color:var(--ink-soft);padding:12px;border-radius:10px;cursor:pointer;transition:color .25s}
+.tab.active{color:#fff}
+.tab-ind{position:absolute;z-index:1;top:6px;bottom:6px;left:6px;width:calc(50% - 6px);background:var(--dark);border-radius:10px;transition:transform .3s cubic-bezier(.16,1,.3,1);box-shadow:0 6px 16px -6px rgba(15,22,32,.5)}
+.tabs[data-active="how"] .tab-ind{transform:translateX(100%)}
 
-.h{text-align:center;margin-bottom:18px}
-.h h1{color:var(--ink);font-size:23px;font-weight:800;letter-spacing:-.6px}
-.h p{color:var(--ink-soft);font-size:13.5px;margin-top:6px}
+.pane{display:none;animation:fade .3s ease}.pane.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
-/* amount */
-.amount{position:relative;text-align:center;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(6,182,212,.05));
-  border:1px solid rgba(16,185,129,.22);border-radius:18px;padding:16px;margin-bottom:18px}
-.amount .lbl{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-2)}
-.amount .val{color:var(--ink);font-size:38px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-top:4px}
-.amount .ord{font-size:12px;color:var(--ink-muted);margin-top:4px}
+.qr-card{position:relative;width:max-content;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 10px 30px -16px rgba(15,23,42,.25)}
+.qr-card img{display:block;width:230px;height:230px;border-radius:8px}
+.qr-logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--dark);border-radius:999px;
+  padding:7px 14px;font-size:15px;font-weight:800;letter-spacing:-.3px;box-shadow:0 4px 14px rgba(0,0,0,.3);border:3px solid #fff}
+.qr-logo .w{color:#fff}.qr-logo .o{color:var(--lime)}
 
-/* QR */
-.qr-wrap{position:relative;background:linear-gradient(135deg,#f8fafc,#eef2f7);border-radius:20px;padding:20px;text-align:center}
-.qr-wrap .box{position:relative;background:#fff;padding:14px;border-radius:16px;display:inline-block;box-shadow:0 4px 14px -4px rgba(15,23,42,.1)}
-.qr-wrap .box img{width:188px;height:188px;display:block;border-radius:6px}
-.qr-wrap .scan{position:absolute;left:14px;right:14px;top:14px;height:26px;border-radius:8px;
-  background:linear-gradient(180deg,rgba(16,185,129,.5),transparent);animation:scan 2.4s ease-in-out infinite;pointer-events:none}
-@keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(158px)}}
-.qr-wrap .badge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:11px;
-  background:#fff;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.18);font-weight:800;color:var(--primary-2);font-size:12px;border:2px solid #ecfdf5}
-.qr-hint{margin-top:12px;font-size:12.5px;color:var(--ink-soft)}
+.hint{text-align:center;color:var(--ink-soft);font-size:14px;line-height:1.6;margin:18px 6px 16px}
 
-/* apps */
-.apps{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
-.appchip{font-size:11px;font-weight:700;color:var(--ink-soft);background:#fff;border:1px solid var(--card-line);padding:6px 11px;border-radius:10px;display:flex;align-items:center;gap:6px}
-.appchip i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;cursor:pointer;font:inherit;font-weight:800;border-radius:15px;transition:transform .18s,box-shadow .22s,filter .2s}
+.btn svg{width:20px;height:20px}
+.btn-dark{background:var(--dark);color:#fff;min-height:56px;font-size:15.5px}
+.btn-dark:hover{transform:translateY(-1px);box-shadow:0 12px 26px -12px rgba(15,22,32,.7)}
+.btn-lime{background:linear-gradient(180deg,#c8f04a,var(--lime));color:#0e1a05;min-height:60px;font-size:16.5px;letter-spacing:-.2px;
+  box-shadow:0 12px 30px -10px rgba(190,230,60,.7),inset 0 1px 0 rgba(255,255,255,.5)}
+.btn-lime:hover{transform:translateY(-1px);filter:brightness(1.03);box-shadow:0 16px 36px -10px rgba(190,230,60,.85)}
 
-.div{display:flex;align-items:center;gap:14px;margin:18px 0;color:var(--ink-muted);font-size:12px;font-weight:600}
-.div::before,.div::after{content:"";flex:1;height:1px;background:var(--card-line)}
+.valid{display:flex;align-items:center;gap:12px;margin:18px 2px 16px}
+.valid .lbl{font-size:13px;font-weight:600;color:var(--ink-soft);white-space:nowrap}
+.valid .track{flex:1;height:8px;background:var(--track);border-radius:999px;overflow:hidden}
+.valid .fill{height:100%;width:78%;background:linear-gradient(90deg,var(--lime),var(--lime-2));border-radius:999px;transition:width 1s linear}
+.valid .time{font-size:13px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:14px 20px;
-  font:700 15px/1 inherit;border:0;border-radius:14px;cursor:pointer;color:#fff;text-decoration:none;
-  background:linear-gradient(135deg,var(--primary),var(--primary-2));
-  box-shadow:0 10px 24px -10px rgba(16,185,129,.6),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .2s,box-shadow .25s}
-.btn:hover{transform:translateY(-1px);box-shadow:0 14px 30px -10px rgba(16,185,129,.7)}
-.btn .arrow{transition:transform .25s}.btn:hover .arrow{transform:translateX(4px)}
+.verify-hint{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;
+  border:1px solid rgba(190,230,60,.5);background:rgba(190,230,60,.07);border-radius:999px;padding:13px 16px;
+  font-size:13.5px;font-weight:700;color:var(--ink);margin-bottom:14px}
 
-.status{display:flex;align-items:center;justify-content:center;gap:9px;font-size:13.5px;font-weight:600;color:var(--ink-soft);margin-top:16px}
-.status.fail{color:var(--danger)}
-.spin{width:16px;height:16px;border:2px solid #cbd5e1;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.foot-note{text-align:center;font-size:11px;color:var(--ink-muted);margin-top:10px}
+.info{display:flex;gap:9px;background:#f8fafc;border:1px solid var(--track);border-radius:14px;padding:13px 15px;margin-top:18px}
+.info svg{width:16px;height:16px;color:var(--ink-muted);flex-shrink:0;margin-top:2px}
+.info p{font-size:12.5px;line-height:1.55;color:var(--ink-muted)}
+.info b{color:var(--ink-soft)}
 
-.foot{text-align:center;margin-top:18px}
-.foot a{color:rgba(255,255,255,.7);font-size:13px;font-weight:600;text-decoration:none}
-.foot a:hover{color:#fff}
+/* how-to steps */
+.steps{counter-reset:s;display:flex;flex-direction:column;gap:14px;padding:4px 2px}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step .n{counter-increment:s;flex:0 0 30px;width:30px;height:30px;border-radius:50%;background:var(--lime-soft);color:var(--lime-2);
+  font-weight:800;font-size:14px;display:grid;place-items:center}
+.step .n::before{content:counter(s)}
+.step .t b{display:block;font-size:14.5px;font-weight:700;color:var(--ink)}
+.step .t span{font-size:13px;color:var(--ink-soft)}
 
-/* success overlay */
-.success{position:absolute;inset:0;border-radius:28px;background:rgba(255,255,255,.97);
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:28px;text-align:center;animation:fade .3s ease}
-.success.show{display:flex}
-@keyframes fade{from{opacity:0}to{opacity:1}}
-.success .ic{width:84px;height:84px;border-radius:24px;background:linear-gradient(135deg,var(--primary),#06b6d4);
-  display:grid;place-items:center;box-shadow:0 20px 40px -15px rgba(16,185,129,.55),inset 0 1px 0 rgba(255,255,255,.4);
-  animation:pop .5s cubic-bezier(.2,1.4,.5,1);margin-bottom:8px}
-@keyframes pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
-.success .ic svg{width:42px;height:42px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.success h2{color:var(--ink);font-size:22px;font-weight:800}
-.success p{color:var(--ink-soft);font-size:13.5px}
-.success .utr{margin-top:6px;font-size:12px;color:var(--ink-soft);background:#f1f5f9;border:1px solid var(--card-line);padding:6px 12px;border-radius:10px}
+/* success */
+.success{position:fixed;inset:0;max-width:480px;margin:0 auto;background:rgba(255,255,255,.98);z-index:50;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px;text-align:center}
+.success.show{display:flex;animation:fade .3s ease}
+.success .ic{width:92px;height:92px;border-radius:50%;background:linear-gradient(180deg,#c8f04a,var(--lime));
+  display:grid;place-items:center;box-shadow:0 20px 50px -14px rgba(190,230,60,.75);animation:pop .5s cubic-bezier(.2,1.4,.5,1)}
+@keyframes pop{0%{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.success .ic svg{width:46px;height:46px;stroke:#0e1a05;stroke-width:3.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.success h2{font-size:24px;font-weight:800;color:var(--ink)}
+.success p{color:var(--ink-soft);font-size:14px}
+.success .utr{margin-top:4px;font-size:12.5px;color:var(--ink-soft);background:#f1f5f9;border:1px solid var(--line);padding:7px 14px;border-radius:10px}
 
-@media (max-width:480px){.card{padding:26px 20px;border-radius:24px}.orb.c{display:none}}
-
-.demo{position:fixed;z-index:20;left:50%;bottom:16px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;
-  background:rgba(10,15,28,.92);border:1px solid rgba(255,255,255,.12);padding:8px 10px 8px 14px;border-radius:999px;
-  font-size:12px;color:#94a3b8;box-shadow:0 12px 30px rgba(0,0,0,.5)}
-.demo button{font-size:12px;font-weight:700;border:0;border-radius:999px;padding:7px 13px;cursor:pointer}
-.demo .ok{background:var(--primary);color:#04210f}.demo .re{background:rgba(255,255,255,.1);color:#cbd5e1}
+.demo{position:fixed;z-index:80;left:50%;bottom:14px;transform:translateX(-50%);display:flex;gap:8px;align-items:center;
+  background:rgba(15,22,32,.95);border:1px solid rgba(255,255,255,.12);padding:7px 9px 7px 13px;border-radius:999px;font-size:11.5px;color:#94a3b8}
+.demo button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.demo .ok{background:var(--lime);color:#0e1a05}.demo .re{background:rgba(255,255,255,.1);color:#cbd5e1}
 </style>
 </head>
 <body>
-<div class="orbs"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
-
-<div class="stage">
-  <div class="brand"><span class="dot"></span>WeeWoo Store</div>
-
-  <div class="card">
-    <div class="h">
-      <h1>Scan to Pay</h1>
-      <p>Complete your payment securely with any UPI app</p>
-    </div>
-
-    <div class="amount">
-      <div class="lbl">Amount Payable</div>
-      <div class="val">₹1,499</div>
-      <div class="ord">Order #WW-10482</div>
-    </div>
-
-    <div class="qr-wrap">
-      <div class="box">
-        <div class="scan"></div>
-        <img alt="Scan to pay" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgUAAAIFAQAAAABq57OgAAAFD0lEQVR4nO2dwY3rPAyEZ+IFnJvTgbcTp6S/AzudxZ04HTi3BIgz/4G0rGTxgAe8LKADdTK0zgcL4BLkkJIo/Nu47/4RAAQhCJ8lQNP2KGlonuhuQCtptuk2zWoCetkLPrpbCasIQhDeCJUkSTfgQuqyw7gHsJDtE52ECzkAQG1u/VrpbP8B0vNT3xCEIHyacCJ5BIBKPACopfELuJqBtw/0MzCS+Q8vJA8f/IYgBOGXCAs1U7IIZAB1BjR+4XQAuhv4DQDi8Te/IQhB+CihlflqgN8LNYvHO/ldSbMZuB44HX73G4IQhM8QeklnAFgoLSSpCUDzRCdpWuhxCfmV3k3pZDGrCEIQNsJCkuQeuNTiAehu6RF3ApUGiMc7NVXiQTwC9pvdp74hCEH4IOEL7Q/FemxEVOj/25nwsRANMO5BVMB1l+QQIPTqIBRIgKak7Jl0bRH0BPSzv1JpQMohsxAboBR6dRCKI5jwPAOopcnyQt2gqdLQmIrdPvJ3B1iI0j7Qz2HVQSiRAMnk6O7mRmtWnT1O9mInrXqfm73CqoNQJMFDCaCT1kfUysZahVmdeV4xD6sOQomE1NuBzcBRKzV/aMsLzapzX61n9IEEoUhC+8DpQMntt3naH6zMeIaliHoCd6K9U7PIRiYIhrIXhBIJWAONM/K8EMg0EACNdK6F9gFYDimtjyWsIghBeBkp7ZMb7TOF2N5+mrrzsL6ALBwPqw5CcQTT8PLHVwN3kXpz5v3M5LYjWwxCwQTPC9sH0Czk3uS8a6XT/udPxN5K6kOz8FjQKoIQBB95gAELpjNl+lwLqKQ5SX+9PERRaCBBKJRgXjlPBr1Rz9tPa61lGiDJeTBbHyICCUKRBKw9p+tonrleDSDZb1aQsREV8yAUS9gCjKnScN0Bd2pamGYBQCSJyxdObXLmbGPfYhCKJZwOsE5qM2UAaQujzQ5bOtlfdjYLa0otZxVBCMI6UneT+2oglcnzEBtWMc9m/TEikCAUR9gyQB+vRRYAQGUhtsshmV4SGkgQSiUsZNYHct0B8N3k3kl9py6VdCXaO1PiKEUfSBDKJLxoIGsfkwt3qxxiVcRz/aJi+7aY0ECCUCLBN4t3fkrTejSTt3lciUttL1wtnfSu1ZEMDSQIZRLyXS/r6LIdirXemz82FTt8dRDKJGzt/14En312OydydebWfvq2wyCyxSAUSVg4gDq7Bm3BNDs7xmncb4F3ndLJ7gY70elj3xCEIHyQ8O6rB28JAbbNimtt3H+RjlYAwlcHoWyC+er+slsPRvDBbwDNE2PjZm/O/LvyruuyVhGEIGCrLeLnBi7g5ZSm15+lA0NKWEUQgvAytkZpWHfedjRI8x6XZL46NJAglEvIzwNZp7LmD7f17NFPtbaCTMTVQSiRgNx+015EvHRSv1n1Nht9IEEolODB9LmWxjrXq4Gsv5o67SHdueolE6ITNQiFEl7v8Hq8/9Uv7sqaUrPrvOI8kCAUS9ju8PKWJt93C2DTQKjTftP7vP0pfHUQyiWkO7xsjHbtgPTESKYq4p12Wwxsdm10KmYVQQjCnwhrQdz2fXWSpsXuW7TrvHA13z5VIsljmasIQhDSsB2Kfouoe2W0D+BK9tvNdPQXwlcHoVxCL7/DKw1zxY6v1vvqbGO5pNWZMyrmQSiT8HKH1+ARSHfnmkNeSM3UaQ92D/ghCumUhVJWEYQgpME/9Hn89Yg7vIJQHOF/Zj9gqbb0TBwAAAAASUVORK5CYII=">
-        <div class="badge">UPI</div>
-      </div>
-      <div class="qr-hint">Open any UPI app and scan this code to pay</div>
-      <div class="apps">
-        <span class="appchip"><i style="background:#4285f4"></i>GPay</span>
-        <span class="appchip"><i style="background:#5f259f"></i>PhonePe</span>
-        <span class="appchip"><i style="background:#00baf2"></i>Paytm</span>
-        <span class="appchip"><i style="background:#00a651"></i>BHIM</span>
-      </div>
-    </div>
-
-    <div class="div">or pay on this phone</div>
-    <a class="btn" href="#" onclick="alert('On a phone this opens your UPI app via the bhim_link.');return false;">
-      Open UPI App <span class="arrow">→</span>
-    </a>
-
-    <div class="status" id="status"><span class="spin"></span><span>Waiting for payment…</span></div>
-    <div class="foot-note">🔒 Encrypted · Powered by IMB UPI · NPCI · Do not close this page</div>
-
-    <div class="success" id="success">
-      <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
-      <h2>Payment received</h2>
-      <p>₹1,499 paid successfully</p>
-      <div class="utr">UTR · 435644746487</div>
-      <p style="margin-top:8px">Redirecting to your order…</p>
-    </div>
+<div class="sheet">
+  <div class="head">
+    <span class="verify-pill">⚡ Instant verification</span>
+    <div class="amt"><span class="rs">₹</span>234.18</div>
+    <div class="ord">Order #11032</div>
   </div>
 
-  <div class="foot"><a href="#">← Return to WeeWoo Store</a></div>
+  <div class="body">
+    <div class="tabs" id="tabs" data-active="scan">
+      <span class="tab-ind"></span>
+      <button class="tab active" data-pane="scan">Scan QR</button>
+      <button class="tab" data-pane="how">How to pay</button>
+    </div>
+
+    <!-- SCAN QR -->
+    <div class="pane active" id="pane-scan">
+      <div class="qr-card">
+        <img alt="UPI QR" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAhsAAAIbAQAAAABqXGEQAAAFVUlEQVR4nO2dXY7qOBCFT3WQ0m/0DoJ0FwI7I+xglhR2QnYAbyCRPvNQ5R9mRtM9ut09WDp+CiH5FEtlu1x1bBvx22V++X0GIIgggggiyLdCFktls5iZY+cVDm+03c1sE4/ezGwFADi+Ir/z+oVfIoggPwMBeceeJEkMd+z5DgAY7sD6HehJkuP6HdsrMMQlicHfmXry9DzVEUSQz0Mu0W13HC8vAMBTR84dJ8DMjHPcXYzneLOMDE9XHUEE+S+QxUYYSbpnQ9vdDMPd/+xpm472Bhxfv/1LBBHkxyAdbVhsB/BoNsbNeYXDQB7MeDSL4eC7v0QQQb4dsiZ5BQDs5xfvzDuOybcvvf2WHNOzHRnzgKerjiCCfAJy8KBMcnImwLY3Gy/u22+8MQAAFmO0i9nf2X3tlwgiyE9AVkBXMlYLABpgAID1YuhBLDj8Ef16R1yA7RUPWa7nqY4ggnwSsth4MdvdzKynDe8AwGPPEcYpgvXFoT+80XY+BhzeqLi9IC1CQJI8ew9OkmfzED4Z/g55z85/xO2Txx+XitsL0h5ksRGeed0sNq4Xs1fwhGTVKUt7XBPzCrh05BV+qbi9IA1D1p5yPa5wsBeXIeQclRfaLqWrXLJQB3WerTqCCPJBSdoD9D5LXWedAmCcegIdR7gXdOq8fVzza1vKyRGkOUjtuvMUwfrK4yfJO/bncP4f3HxpcgRpFOJStLPlFNQZRX9GTnADP1u+pN9FxxAyyOwFaQ3iPXjYL3P4Jmst0xgQtg7AL+vXZPaCNAYpUcvkuLiTcwL23q9nh57Md5PHb3JyBGkRUqa0ydYjFt+lxuCxzDKPRXj84frI7AVpD+K9fVlbEl18Tkz5XaBqAR71GUoLkNkL0hgEdaCmcmeYW0AK6sQYkD3+amR4nuoIIsinSnJc6lIMPErl0Ge1MaAprSCNQpB696ko6yNYDyCpb/aeowJQVth63FO+vSANQnIkZ+qZfHtea88mLyoEqvWF9Rpzmb0gLUIOQ47kAMBxTTNLK07SPHZL8rjKcfvTt3yJIIL8HOTykrbBCSkaSZfep81xjNPNgI6cQ5u/SjPh56uOIIJ8CFmMXGwfkhsA6KO3p+3pialLLB9czIbQn/kmCl/6JYII8jMQJEUCY3uos989IV0C8MkrIpqfp7/7syI5gjQJKQriko+derrrbnX4ZksCqGVrI5SuEqRJCKpIJOBd/Dapb96T2vih48+vATJ7QZqEZCnlFKKzWEuLYvYn5OVXp6w/y5IFmb0g7UHCySnKesbOrvfa3wnfvopa1mFNmb0gjUGKJofZoZ/8n1qRcPZnYziY0kbJSlcJ0iokRyJt03FMi8U7mu+I48XSBmmHN/i6245jbKLwXNURRJCPS56bXuvOHEC91X2SIxcpWi3lUW8vSGOQ2n7zvb5MXpFPeEgePyI1W/aGldkL0hikCI/LuSXV6qrJ71abKMCfBZAOQZHZC9IapJ6b5rW0RW08+UNJfTPEyBDvKpIjSJuQ7OSQzC0ADwlbZifHy8Ou9zJ7QdqEVCcVwhWYvvFl5GPzSYUpkpODOljrWAdBmoT87aTCEskB8Je9jQHUY8D+DE1pBWkXUk4qtLcI1ES6KpT180uR5zDp7XNq69mqI4gg/15WD7+WFdZnAOC8AcCX7fWV8687QBxfr5h/8WAA+qsNJwCLof+qLxFEkP8Vckwdf3TmftzJ/mIYbmmpIWZvMFpdJUiDkEffPkvRqtxtUqWlUomUlaUVpE1IWUkIpNVV2xLL3F7z8qsptkLzFuA6BaWrBGkSYvz4mY/K/DzVEUQQQQQR5B/LnwQBAEQNQvxOAAAAAElFTkSuQmCC">
+        <div class="qr-logo"><span class="w">wee</span><span class="o">woo</span></div>
+      </div>
+
+      <p class="hint">Scan with any UPI app. On mobile, tap Download and open the QR from your app's gallery.</p>
+
+      <button class="btn btn-dark" id="dl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        Download QR to pay
+      </button>
+
+      <div class="valid">
+        <span class="lbl">QR valid for</span>
+        <span class="track"><span class="fill" id="fill"></span></span>
+        <span class="time" id="time">9:48</span>
+      </div>
+
+      <div class="verify-hint">After paying, tap the button to verify instantly ⚡</div>
+
+      <button class="btn btn-lime" id="verify">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+        I have completed payment
+      </button>
+
+      <div class="info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+        <p><b>Already paid?</b> Tap the green "I have completed payment" button — we check your payment and confirm it instantly. No waiting needed.</p>
+      </div>
+    </div>
+
+    <!-- HOW TO PAY -->
+    <div class="pane" id="pane-how">
+      <div class="steps">
+        <div class="step"><span class="n"></span><span class="t"><b>Open any UPI app</b><span>Google Pay, PhonePe, Paytm, or BHIM.</span></span></div>
+        <div class="step"><span class="n"></span><span class="t"><b>Scan the QR code</b><span>Or tap "Download QR to pay" and pick it from your gallery.</span></span></div>
+        <div class="step"><span class="n"></span><span class="t"><b>Pay ₹234.18</b><span>Confirm the payment in your UPI app.</span></span></div>
+        <div class="step"><span class="n"></span><span class="t"><b>Tap "I have completed payment"</b><span>We verify with your bank instantly — no waiting.</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="success" id="success">
+  <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+  <h2>Payment verified</h2>
+  <p>₹234.18 received successfully</p>
+  <div class="utr">UTR · 435644746487</div>
+  <p style="margin-top:6px">Redirecting to your order…</p>
 </div>
 
 <div class="demo">
   Preview:
-  <button class="ok" onclick="document.getElementById('success').classList.add('show')">▶ Simulate payment success</button>
+  <button class="ok" onclick="document.getElementById('success').classList.add('show')">▶ Simulate verified</button>
   <button class="re" onclick="document.getElementById('success').classList.remove('show')">Reset</button>
 </div>
+
+<script>
+// tabs
+var tabs=document.getElementById('tabs');
+tabs.querySelectorAll('.tab').forEach(function(b){
+  b.addEventListener('click',function(){
+    tabs.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active')});
+    document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('active')});
+    b.classList.add('active');
+    var pane=b.getAttribute('data-pane');
+    document.getElementById('pane-'+pane).classList.add('active');
+    tabs.setAttribute('data-active',pane);
+  });
+});
+// countdown
+var t=588,fill=document.getElementById('fill'),time=document.getElementById('time');
+setInterval(function(){ if(t>0){t--; var m=Math.floor(t/60),s=String(t%60).padStart(2,'0'); time.textContent=m+':'+s; fill.style.width=(t/588*100)+'%'; }},1000);
+// verify button -> success (in real page this calls the status endpoint)
+document.getElementById('verify').addEventListener('click',function(){ document.getElementById('success').classList.add('show'); });
+document.getElementById('dl').addEventListener('click',function(){ alert('Downloads the QR image so mobile users can scan it from their gallery.'); });
+</script>
 </body>
 </html>
