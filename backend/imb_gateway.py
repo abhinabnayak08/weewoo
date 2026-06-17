@@ -95,6 +95,55 @@ def normalize_status(payload: dict[str, Any]) -> str:
     return STATUS_PENDING
 
 
+def parse_webhook(payload: dict[str, Any]) -> dict[str, Any]:
+    """Normalize an IMB webhook body into a predictable dict.
+
+    Handles both JSON objects and form-encoded bodies where ``result`` is a
+    JSON-encoded string. Returns ``order_id``, the decoded ``result`` dict, the
+    reported ``amount``/``utr``, and ``paid`` — which is True only when IMB's
+    rule holds: top-level ``status == SUCCESS`` AND ``result.txnStatus == COMPLETED``.
+    Callers should still re-verify via :meth:`IMBGateway.check_order_status`.
+    """
+    import json
+
+    result = payload.get("result")
+    if isinstance(result, str):
+        try:
+            result = json.loads(result)
+        except (ValueError, TypeError):
+            result = {}
+    if not isinstance(result, dict):
+        result = {}
+
+    order_id = str(
+        payload.get("order_id")
+        or payload.get("orderId")
+        or result.get("orderId")
+        or result.get("order_id")
+        or ""
+    )
+
+    paid = (
+        str(payload.get("status", "")).strip().upper() == "SUCCESS"
+        and str(result.get("txnStatus", "")).strip().upper() == "COMPLETED"
+    )
+
+    amount: Optional[float] = None
+    if result.get("amount") is not None:
+        try:
+            amount = float(result["amount"])
+        except (TypeError, ValueError):
+            amount = None
+
+    return {
+        "order_id": order_id,
+        "paid": paid,
+        "amount": amount,
+        "utr": str(result.get("utr") or ""),
+        "result": result,
+    }
+
+
 def make_qr_data_uri(upi_string: str, box_size: int = 10, border: int = 2) -> str:
     """Render a UPI deep link (or any string) into a base64 PNG data URI."""
     qr = qrcode.QRCode(

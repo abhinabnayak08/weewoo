@@ -121,11 +121,62 @@ Our gateway maps IMB's several status fields to three internal states:
 
 ---
 
-## 3. Webhook / Callback (optional push verification)
+## 3. Webhook / Callback (realtime push verification)
 
-IMB can POST the final transaction status to a callback URL you register on the
-dashboard. The exact payload was not provided, so our receiver
-(`POST /api/payments/webhook`) is **defensive**: it accepts JSON or form data,
-extracts `order_id` from common key names, then **re-verifies via Check Order
-Status before trusting it** (never marks paid on webhook content alone). Polling
-remains the authority; the webhook only triggers an early re-check.
+IMB POSTs realtime transaction updates to the webhook URL you register on the
+dashboard (API Credentials → **Update Webhook URL**).
+
+```
+POST {your-webhook-url}
+Content-Type: application/x-www-form-urlencoded
+```
+
+The body is form-encoded; `result` arrives as a **JSON string** (decode it).
+
+### Sample payload
+
+```json
+{
+  "status": "SUCCESS",
+  "order_id": "TXN00743264723",
+  "message": "Transaction Successfully",
+  "result": {
+    "txnStatus": "COMPLETED",
+    "resultInfo": "Transaction Success",
+    "orderId": "TXN00743264723",
+    "amount": 100,
+    "date": "2021-01-01 12:00:00",
+    "utr": 435644746487,
+    "customer_mobile": 9876543210,
+    "remark1": "your-customer@gmail.com",
+    "remark2": "Your Data"
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `status` | Overall webhook status. |
+| `order_id` | Unique order / transaction id. |
+| `result.txnStatus` | Actual txn status (`COMPLETED` / `PENDING` / ...). |
+| `result.amount` | Amount paid. |
+| `result.utr` | UPI transaction reference number. |
+| `result.customer_mobile` | Customer mobile. |
+| `result.remark1` / `remark2` | The custom values we sent on create-order. |
+
+### IMB's mandatory verification rules
+
+- Only treat as paid when **`status == SUCCESS` AND `result.txnStatus == COMPLETED`**.
+- **Idempotency** — never credit / process the same `orderId` twice. Check your DB first.
+- Respond quickly with **HTTP 200**.
+- Verify the **amount** matches before activating any service.
+- Use HTTPS and keep webhook logs.
+
+### Our receiver
+
+`POST /api/payments/webhook` implements all of the above and goes one step
+further: even on a well-formed `SUCCESS`/`COMPLETED` event it **re-confirms via
+Check Order Status** before persisting `SUCCESS`, so a spoofed webhook can never
+mark an order paid. Already-terminal orders are acknowledged as duplicates
+without re-processing. Status polling and the webhook share this single
+authoritative path.

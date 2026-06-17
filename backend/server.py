@@ -18,6 +18,7 @@ from imb_gateway import (
     IMBError,
     generate_order_id,
     normalize_status,
+    parse_webhook,
     make_qr_data_uri,
     STATUS_SUCCESS,
     STATUS_FAILED,
@@ -220,34 +221,59 @@ async def payment_status(order_id: str):
 
 @api_router.post("/payments/webhook")
 async def payment_webhook(request: Request):
-    """Defensive callback receiver.
+    """IMB realtime callback receiver.
 
-    IMB's exact webhook payload is not documented, so we extract an order id from
-    whatever common key shows up, then RE-VERIFY via check-order-status before
-    trusting it. We never mark a payment paid from webhook content alone.
+    Per IMB docs the payload is POSTed as form-encoded fields:
+      status, order_id, message, result (a JSON string -> {txnStatus, amount, utr, ...})
+
+    IMB's rule: only treat as paid when status == SUCCESS AND txnStatus == COMPLETED.
+    We additionally:
+      * stay idempotent — already-terminal orders are acknowledged without re-processing;
+      * re-verify the amount against the order we created;
+      * confirm with check-order-status (authoritative) before persisting SUCCESS,
+        so a spoofed webhook can never mark an order paid.
+    Always returns HTTP 200 quickly so IMB does not retry needlessly.
     """
-    order_id: Optional[str] = None
+    # Accept either JSON or form-encoded bodies.
     try:
         data = await request.json()
     except Exception:
-        form = await request.form()
-        data = dict(form)
-    if isinstance(data, dict):
-        result = data.get("result") if isinstance(data.get("result"), dict) else {}
-        for key in ("order_id", "orderId", "orderid"):
-            order_id = data.get(key) or result.get(key)
-            if order_id:
-                break
+        data = dict(await request.form())
+    if not isinstance(data, dict):
+        return {"ok": False, "reason": "unparseable body"}
 
+    event = parse_webhook(data)
+    order_id = event["order_id"]
     if not order_id:
         return {"ok": False, "reason": "no order_id in payload"}
 
-    payment = await _get_payment(str(order_id))
+    payment = await _get_payment(order_id)
     if not payment:
         return {"ok": False, "reason": "unknown order_id"}
 
+    # Idempotency: never re-process an order already in a terminal state.
+    if payment["status"] in (STATUS_SUCCESS, STATUS_FAILED):
+        return {"ok": True, "order_id": order_id, "status": payment["status"], "duplicate": True}
+
+    webhook_says_paid = event["paid"]
+
+    # Amount guard: reject mismatched amounts before trusting the event.
+    if event["amount"] is not None and event["amount"] != float(payment["amount"]):
+        logger.warning(
+            "Webhook amount mismatch for %s: webhook=%s stored=%s",
+            order_id, event["amount"], payment["amount"],
+        )
+        webhook_says_paid = False
+
+    # Authoritative confirmation: re-verify via check-order-status before persisting.
     payment = await _refresh_status(get_gateway(), payment)
-    return {"ok": True, "order_id": order_id, "status": payment["status"]}
+
+    return {
+        "ok": True,
+        "order_id": order_id,
+        "status": payment["status"],
+        "webhook_paid": webhook_says_paid,
+    }
 
 
 @api_router.get("/payments/{order_id}/checkout", response_class=HTMLResponse)

@@ -48,6 +48,51 @@ def test_make_qr_data_uri():
     assert len(uri) > 100
 
 
+# --- parse_webhook ----------------------------------------------------------
+
+def test_parse_webhook_json_object():
+    payload = {
+        "status": "SUCCESS",
+        "order_id": "TXN00743264723",
+        "result": {"txnStatus": "COMPLETED", "amount": 100, "utr": 435644746487},
+    }
+    ev = g.parse_webhook(payload)
+    assert ev["order_id"] == "TXN00743264723"
+    assert ev["paid"] is True
+    assert ev["amount"] == 100.0
+    assert ev["utr"] == "435644746487"
+
+
+def test_parse_webhook_form_encoded_result_string():
+    # As IMB sends it: result is a JSON string in a form-encoded body.
+    payload = {
+        "status": "SUCCESS",
+        "order_id": "TXN1",
+        "result": '{"txnStatus": "COMPLETED", "amount": 50}',
+    }
+    ev = g.parse_webhook(payload)
+    assert ev["order_id"] == "TXN1"
+    assert ev["paid"] is True
+    assert ev["amount"] == 50.0
+
+
+def test_parse_webhook_not_paid_when_pending():
+    ev = g.parse_webhook({"status": "SUCCESS", "order_id": "X", "result": {"txnStatus": "PENDING"}})
+    assert ev["paid"] is False
+
+
+def test_parse_webhook_not_paid_when_status_not_success():
+    ev = g.parse_webhook({"status": "FAILED", "order_id": "X", "result": {"txnStatus": "COMPLETED"}})
+    assert ev["paid"] is False
+
+
+def test_parse_webhook_handles_garbage_result():
+    ev = g.parse_webhook({"status": "SUCCESS", "order_id": "X", "result": "not-json"})
+    assert ev["order_id"] == "X"
+    assert ev["paid"] is False
+    assert ev["amount"] is None
+
+
 # --- config -----------------------------------------------------------------
 
 def test_config_requires_token(monkeypatch):
