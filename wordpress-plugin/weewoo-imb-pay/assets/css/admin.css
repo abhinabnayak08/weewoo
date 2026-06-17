@@ -1,0 +1,67 @@
+/* WeeWoo Pay (IMB) — premium admin dashboard. */
+.ww-adm{--lime:#bee63c;--lime-2:#8fc220;--dark:#0f1620;--ink:#0f172a;--soft:#64748b;--muted:#94a3b8;--line:#e7eaef;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;
+  max-width:1180px;margin:18px 20px 40px;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+.ww-adm *{box-sizing:border-box}
+
+.ww-adm-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  background:radial-gradient(420px 160px at 100% -40%,rgba(190,230,60,.25),transparent 60%),linear-gradient(160deg,#15223c,var(--dark));
+  color:#fff;border-radius:18px;padding:18px 22px;box-shadow:0 20px 50px -24px rgba(15,23,42,.6)}
+.ww-adm-brand{display:flex;align-items:center;gap:12px}
+.ww-adm-brand .dot{width:12px;height:12px;border-radius:50%;background:var(--lime);box-shadow:0 0 18px var(--lime)}
+.ww-adm-brand b{font-size:18px;font-weight:800;display:block;line-height:1.1}
+.ww-adm-brand span{font-size:12px;color:#9aa6b6}
+.ww-adm-actions{display:flex;align-items:center;gap:10px}
+.ww-chip{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:5px 11px;border-radius:999px}
+.ww-chip.on{background:rgba(190,230,60,.18);color:var(--lime);border:1px solid rgba(190,230,60,.4)}
+.ww-chip.off{background:rgba(255,255,255,.1);color:#cbd5e1;border:1px solid rgba(255,255,255,.18)}
+.ww-adm-btn{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:13px;border-radius:10px;padding:9px 15px;cursor:pointer;text-decoration:none;border:0;transition:all .18s}
+.ww-adm-btn.primary{background:var(--lime);color:#0e1a05}
+.ww-adm-btn.primary:hover{filter:brightness(1.05);transform:translateY(-1px);color:#0e1a05}
+.ww-adm-btn.ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.ww-adm-btn.ghost:hover{background:rgba(255,255,255,.16)}
+
+.ww-adm-note{margin:14px 0 0;padding:12px 16px;border-radius:12px;font-size:13.5px;font-weight:600;background:#f1f5f9;border:1px solid var(--line);color:var(--soft)}
+.ww-adm-note.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.ww-adm-note.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.ww-adm-note.bad{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.ww-adm-note a{color:inherit;font-weight:800}
+
+.ww-adm-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:18px 0}
+.ww-adm-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;box-shadow:0 10px 28px -22px rgba(15,23,42,.5)}
+.ww-adm-card .lbl{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.ww-adm-card .val{display:block;font-size:26px;font-weight:800;margin-top:6px;color:var(--ink)}
+.ww-adm-card.ok{border-top:3px solid var(--ok)}.ww-adm-card.warn{border-top:3px solid var(--warn)}.ww-adm-card.bad{border-top:3px solid var(--bad)}
+.ww-adm-card:first-child{border-top:3px solid var(--lime-2)}
+
+.ww-adm-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;align-items:start}
+.ww-adm-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 10px 28px -24px rgba(15,23,42,.5);margin-bottom:16px}
+.ww-adm-phead{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ww-adm-phead h2{font-size:15px;font-weight:800;margin:0;color:var(--ink)}
+.ww-adm-phead span{font-size:12px;color:var(--muted)}
+
+.ww-adm-table{width:100%;border-collapse:collapse;font-size:13px}
+.ww-adm-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line)}
+.ww-adm-table td{padding:11px 10px;border-bottom:1px solid #f1f4f8}
+.ww-adm-table tr:last-child td{border-bottom:0}
+.ww-adm-table a{font-weight:700;color:var(--lime-2);text-decoration:none}
+.ww-adm-table .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--soft)}
+.ww-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
+.ww-badge.ok{background:#dcfce7;color:#166534}.ww-badge.warn{background:#fef3c7;color:#92400e}.ww-badge.bad{background:#fee2e2;color:#991b1b}
+
+.ww-adm-kv{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #f1f4f8;font-size:13px;color:var(--soft)}
+.ww-adm-kv b{color:var(--ink);font-weight:700}
+.ww-adm-kv .mono,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.ww-adm-field{display:block;font-size:12px;font-weight:700;color:var(--soft);margin:12px 0 6px}
+.ww-adm-copy{display:flex;gap:8px}
+.ww-adm-copy input{flex:1;font-size:12px;font-family:ui-monospace,monospace;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#f8fafc;color:var(--ink)}
+
+.ww-adm-empty{color:var(--muted);font-size:13px;padding:8px 2px}
+.ww-adm-errs{list-style:none;margin:0;padding:0;max-height:320px;overflow:auto}
+.ww-adm-errs li{padding:10px 0;border-bottom:1px solid #f1f4f8}
+.ww-adm-errs .tag{display:inline-block;font-size:10.5px;font-weight:800;text-transform:uppercase;background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:6px;margin-right:8px}
+.ww-adm-errs .msg{font-size:13px;color:var(--ink)}
+.ww-adm-errs .t{display:block;font-size:11px;color:var(--muted);margin-top:3px}
+.ww-adm-link{background:none;border:0;color:var(--bad);font:inherit;font-weight:700;font-size:12px;cursor:pointer}
+
+@media (max-width:1100px){.ww-adm-cards{grid-template-columns:repeat(2,1fr)}.ww-adm-grid{grid-template-columns:1fr}}
+@media (max-width:600px){.ww-adm-cards{grid-template-columns:1fr 1fr}}

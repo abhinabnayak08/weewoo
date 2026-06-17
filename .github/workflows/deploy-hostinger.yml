@@ -1,0 +1,27 @@
+name: Deploy plugin to Hostinger (weewoo.in)
+
+# Manual trigger only — click "Run workflow" in the Actions tab when you want to
+# deploy. It never runs automatically, so it can't surprise-deploy to production.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy weewoo-imb-pay over SSH (rsync)
+        uses: easingthemes/ssh-deploy@v5.1.0
+        env:
+          # --- Set these as repo Secrets (Settings → Secrets and variables → Actions) ---
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}     # your private key (PEM)
+          REMOTE_HOST: ${{ secrets.HOSTINGER_SSH_HOST }}        # e.g. 123.45.67.89 or your server hostname
+          REMOTE_USER: ${{ secrets.HOSTINGER_SSH_USER }}        # e.g. u123456789
+          REMOTE_PORT: ${{ secrets.HOSTINGER_SSH_PORT }}        # Hostinger SSH port (often 65002)
+          # Source folder in this repo (note trailing slash) and the target on the server.
+          SOURCE: "wordpress-plugin/weewoo-imb-pay/"
+          TARGET: ${{ secrets.HOSTINGER_PLUGIN_PATH }}          # e.g. /home/u123456789/domains/weewoo.in/public_html/wp-content/plugins/weewoo-imb-pay/
+          ARGS: "-rltgoDzvO --delete"
+          EXCLUDE: ".git*, *.DS_Store"
