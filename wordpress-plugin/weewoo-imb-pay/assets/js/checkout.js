@@ -10,8 +10,8 @@
     try {
       new window.QRCode(holder, {
         text: cfg.bhim,
-        width: 208,
-        height: 208,
+        width: 188,
+        height: 188,
         correctLevel: window.QRCode.CorrectLevel.M
       });
     } catch (e) {
