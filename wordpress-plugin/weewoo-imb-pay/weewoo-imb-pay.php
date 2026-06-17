@@ -40,6 +40,16 @@ add_filter('woocommerce_payment_gateways', function (array $gateways): array {
     return $gateways;
 });
 
+// Register the Checkout-block (Store API) integration so the method also shows
+// on block-based checkouts.
+add_action('woocommerce_blocks_payment_method_type_registration', function ($registry) {
+    if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+        return;
+    }
+    require_once WW_IMB_DIR . 'includes/class-ww-imb-blocks.php';
+    $registry->register(new WW_IMB_Blocks());
+});
+
 // The gateway class depends on WC_Payment_Gateway, which only exists once
 // WooCommerce has loaded its payment classes.
 add_action('plugins_loaded', function () {

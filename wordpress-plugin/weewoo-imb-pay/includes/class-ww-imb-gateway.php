@@ -138,6 +138,15 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
         if (strlen($mobile) > 10) {
             $mobile = substr($mobile, -10);
         }
+        // IMB requires a 10-digit mobile. If the order has none (e.g. phone not a
+        // required checkout field), allow a store-level fallback so create-order
+        // doesn't fail. Filter ww_imb_fallback_mobile to set a default.
+        if (strlen($mobile) < 10) {
+            $mobile = preg_replace('/\D+/', '', (string) apply_filters('ww_imb_fallback_mobile', '', $order));
+            if (strlen($mobile) < 10) {
+                self::log_error('missing-mobile', 'Order has no valid 10-digit billing phone; IMB may reject create-order.', $order->get_id());
+            }
+        }
 
         // Unique IMB order id mapped back to the WC order via meta.
         $imb_order_id = 'WW' . $order->get_id() . 'T' . time();
@@ -197,44 +206,62 @@ final class WW_IMB_Gateway extends WC_Payment_Gateway
             return WW_IMB_Client::STATUS_PENDING;
         }
 
-        $client = self::make_client();
-        $body   = $client->check_order_status($imb_order_id);
-        $status = $client->normalize_status($body);
-        self::log('confirm ' . $imb_order_id . ' => ' . $status . ' ' . wp_json_encode($body));
+        // Concurrency lock: webhook + poll can fire together; never let two
+        // requests complete (and double-reduce stock) for the same order.
+        $lock = 'ww_imb_lock_' . $order->get_id();
+        if (get_transient($lock)) {
+            return WW_IMB_Client::STATUS_PENDING; // another request is verifying; poll again
+        }
+        set_transient($lock, 1, 20);
 
-        if ($status === WW_IMB_Client::STATUS_SUCCESS) {
-            $result = is_array($body['result'] ?? null) ? $body['result'] : [];
+        try {
+            $client = self::make_client();
+            $body   = $client->check_order_status($imb_order_id);
+            $status = $client->normalize_status($body);
+            self::log('confirm ' . $imb_order_id . ' => ' . $status . ' ' . wp_json_encode($body));
 
-            // Amount guard — never complete on a mismatched amount.
-            if (isset($result['amount']) && is_numeric($result['amount'])) {
-                if (abs((float) $result['amount'] - (float) $order->get_total()) > 0.01) {
-                    self::log_error('amount-mismatch', 'IMB=' . $result['amount'] . ' WC=' . $order->get_total(), $order->get_id());
-                    $order->add_order_note(__('IMB reported a different amount than the order total — not auto-completing. Please verify manually.', 'weewoo-imb-pay'));
-                    return WW_IMB_Client::STATUS_PENDING;
+            // Re-read fresh in case another process completed it meanwhile.
+            $fresh = wc_get_order($order->get_id());
+            if ($fresh && ($fresh->is_paid() || $fresh->has_status(['processing', 'completed']))) {
+                return WW_IMB_Client::STATUS_SUCCESS;
+            }
+
+            if ($status === WW_IMB_Client::STATUS_SUCCESS) {
+                $result = is_array($body['result'] ?? null) ? $body['result'] : [];
+
+                // Amount guard — never complete on a mismatched amount.
+                if (isset($result['amount']) && is_numeric($result['amount'])) {
+                    if (abs((float) $result['amount'] - (float) $order->get_total()) > 0.01) {
+                        self::log_error('amount-mismatch', 'IMB=' . $result['amount'] . ' WC=' . $order->get_total(), $order->get_id());
+                        $order->add_order_note(__('IMB reported a different amount than the order total — not auto-completing. Please verify manually.', 'weewoo-imb-pay'));
+                        return WW_IMB_Client::STATUS_PENDING;
+                    }
                 }
+
+                $utr = (string) ($result['utr'] ?? '');
+                if ($utr !== '') {
+                    $order->update_meta_data('_ww_imb_utr', $utr);
+                }
+                $order->payment_complete($utr);
+                $order->add_order_note(sprintf(
+                    /* translators: %s: UPI transaction reference */
+                    __('Payment confirmed by IMB. UTR: %s', 'weewoo-imb-pay'),
+                    $utr !== '' ? $utr : 'N/A'
+                ));
+                $order->save();
+                return WW_IMB_Client::STATUS_SUCCESS;
             }
 
-            $utr = (string) ($result['utr'] ?? '');
-            if ($utr !== '') {
-                $order->update_meta_data('_ww_imb_utr', $utr);
+            if ($status === WW_IMB_Client::STATUS_FAILED) {
+                if (!$order->has_status('failed')) {
+                    $order->update_status('failed', __('IMB reported the payment as failed/expired.', 'weewoo-imb-pay'));
+                }
+                return WW_IMB_Client::STATUS_FAILED;
             }
-            $order->payment_complete($utr);
-            $order->add_order_note(sprintf(
-                /* translators: %s: UPI transaction reference */
-                __('Payment confirmed by IMB. UTR: %s', 'weewoo-imb-pay'),
-                $utr !== '' ? $utr : 'N/A'
-            ));
-            $order->save();
-            return WW_IMB_Client::STATUS_SUCCESS;
+
+            return WW_IMB_Client::STATUS_PENDING;
+        } finally {
+            delete_transient($lock);
         }
-
-        if ($status === WW_IMB_Client::STATUS_FAILED) {
-            if (!$order->has_status('failed')) {
-                $order->update_status('failed', __('IMB reported the payment as failed/expired.', 'weewoo-imb-pay'));
-            }
-            return WW_IMB_Client::STATUS_FAILED;
-        }
-
-        return WW_IMB_Client::STATUS_PENDING;
     }
 }

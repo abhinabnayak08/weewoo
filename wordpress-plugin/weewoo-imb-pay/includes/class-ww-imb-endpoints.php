@@ -158,10 +158,15 @@ final class WW_IMB_Endpoints
 
     private function find_order_by_imb_id(string $imb_order_id)
     {
+        if ($imb_order_id === '') {
+            return null;
+        }
+        // meta_query is HPOS-safe (works on custom order tables and legacy posts).
         $orders = wc_get_orders([
             'limit'      => 1,
-            'meta_key'   => '_ww_imb_order_id', // phpcs:ignore WordPress.DB.SlowDBQuery
-            'meta_value' => $imb_order_id,      // phpcs:ignore WordPress.DB.SlowDBQuery
+            'meta_query' => [
+                ['key' => '_ww_imb_order_id', 'value' => $imb_order_id, 'compare' => '='],
+            ],
         ]);
         return !empty($orders) ? $orders[0] : null;
     }

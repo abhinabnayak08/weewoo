@@ -69,19 +69,49 @@ final class WW_IMB_Client
 
     /**
      * Query the status of an order. Returns the decoded JSON body (or null).
+     *
+     * IMB's docs show a raw-JSON body for this endpoint, but the rest of their
+     * API is form-based. To be safe in production we try JSON first (as
+     * documented) and fall back to form-encoded fields if that doesn't yield a
+     * usable status — so auto-verification works regardless of how IMB parses
+     * the request.
      */
     public function check_order_status(string $order_id): ?array
     {
-        $resp = wp_remote_post($this->api_base . '/api/check-order-status', [
+        $url    = $this->api_base . '/api/check-order-status';
+        $fields = ['user_token' => $this->user_token, 'order_id' => $order_id];
+
+        // Attempt 1 — raw JSON body (as documented).
+        $data = $this->parse_response(wp_remote_post($url, [
             'timeout' => 25,
             'headers' => ['Content-Type' => 'application/json'],
-            'body'    => wp_json_encode([
-                'user_token' => $this->user_token,
-                'order_id'   => $order_id,
-            ]),
-        ]);
+            'body'    => wp_json_encode($fields),
+        ]));
+        if ($this->has_status($data)) {
+            return $data;
+        }
 
-        return $this->parse_response($resp);
+        // Attempt 2 — form-encoded fields (fallback).
+        $data2 = $this->parse_response(wp_remote_post($url, [
+            'timeout' => 25,
+            'body'    => $fields,
+        ]));
+        return $this->has_status($data2) ? $data2 : ($data ?? $data2);
+    }
+
+    /**
+     * Does a decoded body carry a usable transaction status?
+     */
+    private function has_status(?array $d): bool
+    {
+        if (!is_array($d)) {
+            return false;
+        }
+        if (isset($d['status'])) {
+            return true;
+        }
+        $r = $d['result'] ?? null;
+        return is_array($r) && (isset($r['status']) || isset($r['txnStatus']));
     }
 
     /**
