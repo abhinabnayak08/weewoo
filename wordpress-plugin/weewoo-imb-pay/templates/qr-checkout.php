@@ -62,9 +62,9 @@ $home       = home_url('/');
 
       <p class="ww-hint"><?php esc_html_e("Scan with any UPI app. On mobile, tap Download and open the QR from your app's gallery.", 'weewoo-imb-pay'); ?></p>
 
-      <button class="ww-btn ww-btn-dark" id="ww-dl">
+      <button class="ww-dl" id="ww-dl">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
-        <?php esc_html_e('Download QR to pay', 'weewoo-imb-pay'); ?>
+        <?php esc_html_e('Download QR', 'weewoo-imb-pay'); ?>
       </button>
 
       <div class="ww-valid">
@@ -90,12 +90,12 @@ $home       = home_url('/');
       </div>
     </div>
   </div>
-</div>
 
-<div class="ww-success" id="ww-success">
-  <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1a05" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
-  <h2><?php esc_html_e('Payment verified', 'weewoo-imb-pay'); ?></h2>
-  <p><?php esc_html_e('Redirecting to your order…', 'weewoo-imb-pay'); ?></p>
+  <div class="ww-success" id="ww-success">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#0e1a05" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></div>
+    <h2><?php esc_html_e('Payment verified', 'weewoo-imb-pay'); ?></h2>
+    <p><?php esc_html_e('Redirecting to your order…', 'weewoo-imb-pay'); ?></p>
+  </div>
 </div>
 
 <?php wp_footer(); ?>
